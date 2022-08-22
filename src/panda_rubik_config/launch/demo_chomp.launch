@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find panda_rubik_config)/launch/demo.launch">
+    <arg name="pipeline" value="chomp"/>
+  </include>
+</launch>
