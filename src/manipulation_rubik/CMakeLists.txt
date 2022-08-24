@@ -21,6 +21,9 @@ find_package(catkin REQUIRED
     tf2_eigen
     tf2_geometry_msgs
     franka_gripper
+    std_msgs
+    message_generation
+    genmsg
 )
 
 find_package(Eigen3 REQUIRED)
@@ -35,6 +38,25 @@ set(THIS_PACKAGE_INCLUDE_DIRS
   doc/interactivity/include
 )
 
+add_message_files(
+  FILES
+  MoveLeft.msg
+)
+
+
+add_service_files(
+  FILES
+  LfMoveLeft.srv
+)
+
+
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+
 catkin_package(
   LIBRARIES
   INCLUDE_DIRS
@@ -44,9 +66,14 @@ catkin_package(
     moveit_ros_planning_interface
     interactive_markers
     tf2_geometry_msgs
+    message_runtime
   DEPENDS
     EIGEN3
 )
+
+
+
+
 
 
 ###########
@@ -56,4 +83,5 @@ catkin_package(
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
 
 add_subdirectory(doc/rubik_right)
+add_subdirectory(doc/brain)
 

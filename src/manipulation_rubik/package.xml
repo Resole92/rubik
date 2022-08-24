@@ -26,7 +26,9 @@
   <build_depend>tf2_eigen</build_depend>
   <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>franka_gripper</build_depend>
-  
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+
 
   <run_depend>panda_rubik_config</run_depend>
   <run_depend>pluginlib</run_depend>
@@ -44,5 +46,7 @@
   <run_depend>tf2_ros</run_depend>
   <run_depend>tf2_eigen</run_depend>
   <run_depend>tf2_geometry_msgs</run_depend>
+
+
 
 </package>

@@ -9,6 +9,9 @@
 
 // ROS
 #include <ros/ros.h>
+#include <manipulation_rubik/LfMoveLeft.h>
+//#include <manipulation_rubik/MoveLeft.h>
+#include "std_msgs/String.h"
 
 // MoveIt
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -23,8 +26,6 @@
 
 #include <moveit_msgs/ApplyPlanningScene.h>
 #include <moveit_msgs/PlanningScene.h>
-
-
 
 
 // TF2
@@ -190,6 +191,7 @@ void closedGripperManually(int pandaIdentifier, bool isMainteined = false, std::
   auto success = moveToJointPosition(group, joint_position);
   if(!isMainteined)
   {
+    ROS_INFO("Attach object");
     group.attachObject(objectToDetach);
   }
 }
@@ -381,6 +383,7 @@ void moveToTargetPose(int pandaIdentifier, geometry_msgs::Pose& pose)
 {
   auto pandaArmName = "panda_"+ std::to_string(pandaIdentifier) +"_arm";
   moveit::planning_interface::MoveGroupInterface group(pandaArmName);
+
   group.setPoseTarget(pose);
 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
@@ -463,6 +466,13 @@ void moveRightPosition(int pandaIdentifier = 1)
   robotPositionSet1 = Right;
 }
 
+bool moveRightPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Right");
+  moveRightPosition();
+  return true;
+}
+
 void moveBehindPosition(int pandaIdentifier = 1)
 {
   moveit::planning_interface::MoveGroupInterface group("panda_" + std::to_string(pandaIdentifier) + "_arm");
@@ -481,6 +491,13 @@ void moveBehindPosition(int pandaIdentifier = 1)
   pose.position.x += retreatLength;
   workPose1 = pose;
   robotPositionSet1 = Behind;
+}
+
+bool moveBehindPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Behind");
+  moveBehindPosition();
+  return true;
 }
 
 void moveTopPosition(int pandaIdentifier = 1)
@@ -502,6 +519,13 @@ void moveTopPosition(int pandaIdentifier = 1)
   robotPositionSet1 = Top;
 }
 
+bool moveTopPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Top");
+  moveTopPosition();
+  return true;
+}
+
 void moveLeftPosition(int pandaIdentifier = 2)
 {
   moveit::planning_interface::MoveGroupInterface group("panda_" + std::to_string(pandaIdentifier) + "_arm");
@@ -519,6 +543,13 @@ void moveLeftPosition(int pandaIdentifier = 2)
   pose.position.y += retreatLength;
   workPose2 = pose;
   robotPositionSet2 = Left;
+}
+
+bool moveLeftPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Left");
+  moveLeftPosition();
+  return true;
 }
 
 void moveFrontPosition(int pandaIdentifier = 2)
@@ -539,6 +570,13 @@ void moveFrontPosition(int pandaIdentifier = 2)
   pose.position.x -= retreatLength;
   workPose2 = pose;
   robotPositionSet2 = Front;
+}
+
+bool moveFrontPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Front");
+  moveFrontPosition();
+  return true;
 }
 
 void moveBottomPosition(int pandaIdentifier = 2)
@@ -565,8 +603,17 @@ void moveBottomPosition(int pandaIdentifier = 2)
   robotPositionSet2 = Bottom;
 }
 
-void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& planning_scene_interface)
+bool moveBottomPositionRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
 {
+  ROS_INFO("Move Bottom");
+  moveBottomPosition();
+  return true;
+}
+
+void addCollisionObjects()
+{
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+
   std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.resize(3);
 
@@ -630,32 +677,74 @@ void addCollisionObjects(moveit::planning_interface::PlanningSceneInterface& pla
   collision_objects[2].operation = collision_objects[1].ADD;
 
   planning_scene_interface.applyCollisionObjects(collision_objects);
+
+  ros::WallDuration(1.0).sleep();
 }
 
-void startPosition(moveit::planning_interface::MoveGroupInterface& group)
+bool resetEnvironmentRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
 {
+  ROS_INFO("Reset Behaviour");
+  addCollisionObjects();
+  return true;
+}
+
+void startPosition(int pandaIdentifier)
+{
+  moveit::planning_interface::MoveGroupInterface group("panda_" + std::to_string(pandaIdentifier) + "_arm");
+
   auto joint_position = { 0.000000, -0.785000, 0.000000, -2.356000, 0.000000, 1.571000, 0.785000};
   auto success = moveToJointPosition(group, joint_position);
 }
 
-void resetBehaviorAndPickFromStart()
+bool startPositionRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
 {
-  moveit::planning_interface::MoveGroupInterface panda1Group("panda"+ pandaArmNumber +"_arm");
-  moveit::planning_interface::MoveGroupInterface panda2Group("panda_2_arm");
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  addCollisionObjects(planning_scene_interface);
-  startPosition(panda1Group);
-  startPosition(panda2Group);
-  ros::WallDuration(1.0).sleep();
+  ROS_INFO("Move Start Position Right");
+  startPosition(1);
+  return true;
+}
 
+bool startPositionLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Move Start Position Left");
+  startPosition(2);
+  return true;
+}
+
+void pickObject(int pandaIdentifier)
+{
   geometry_msgs::Pose pose;
   pose.position.x = xTablePosition;
   pose.position.y = yTablePosition;
   pose.position.z = tableHeight + rubikDimension/2 + endEffectorLength;
 
-  moveToCartesianPath(1, pose);
-  closedGripperManually(1);
+  moveToCartesianPath(pandaIdentifier, pose);
+  closedGripperManually(pandaIdentifier);
   ros::WallDuration(1.0).sleep();
+}
+
+bool pickRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Pick Right");
+  pickObject(1);
+  moveWorkPosition(1);
+  return true;
+}
+
+bool pickLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Pick Left");
+  pickObject(2);
+  moveWorkPosition(2);
+  return true;
+}
+
+void resetBehaviorAndPickFromStart()
+{
+  addCollisionObjects();
+  startPosition(1);
+  startPosition(2);
+  //pickObject(1);
+  
 }
 
 bool changeCheckCustom(bool disable)
@@ -757,6 +846,20 @@ void leaveMantainAndRetreat(int pandaIdentifier)
 
 }
 
+bool leaveMantainRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Leave Maintain Right");
+  leaveMantainAndRetreat(1);
+  return true;
+}
+
+bool leaveMantainLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Leave Maintain Left");
+  leaveMantainAndRetreat(2);
+  return true;
+}
+
 void leaveObjectAndRetreat(int pandaIdentifier, std::string objectName = rubikName)
 {
   openGripperManually(pandaIdentifier);
@@ -856,6 +959,34 @@ void maintainObjectPanda(robotMaintainPosition mantainPosition, std::string obje
 
 }
 
+bool maintainTopRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Maintain Top Right");
+  maintainObjectPanda(TopRight);
+  return true;
+}
+
+bool maintainBehindRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Maintain Behind Right");
+  maintainObjectPanda(BehindRight);
+  return true;
+}
+
+bool maintainBottomLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Maintain Bottom Left");
+  maintainObjectPanda(BottomLeft);
+  return true;
+}
+
+bool maintainFrontLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Maintain Front Left");
+  maintainObjectPanda(FrontLeft);
+  return true;
+}
+
 void beginARotation(int pandaIdentifier, std::string objectName = rubikName)
 {
   auto rotation = getRotationEndEffector(pandaIdentifier);
@@ -864,6 +995,20 @@ void beginARotation(int pandaIdentifier, std::string objectName = rubikName)
   rotateEndEffector(pandaIdentifier, -rotation);
   leaveObjectAndRetreat(pandaIdentifier, rubikName); 
   rotateEndEffector(pandaIdentifier, rotation); 
+}
+
+bool doRotationLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Do Rotation Left");
+  beginARotation(2);
+  return true;
+}
+
+bool doRotationRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Do Rotation Right");
+  beginARotation(1);
+  return true;
 }
 
 void rotateTopFace()
@@ -924,16 +1069,41 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "rubik_right_move");
   ros::NodeHandle nh;
-  //ros::Publisher traj_pub = nh.advertise<trajectory_msgs::JointTrajectory>("/command",100);
-  //ros::Publisher tfpub = nh.advertise<trajectory_msgs::JointTrajectory>("tf",100);
-  ros::AsyncSpinner spinner(1);
+
+  auto service1 = nh.advertiseService("move_left", moveLeftPositionRequest);
+  auto service2 = nh.advertiseService("move_right", moveRightPositionRequest);
+  auto service3 = nh.advertiseService("move_top", moveTopPositionRequest);
+  auto service4 = nh.advertiseService("move_bottom", moveBottomPositionRequest);
+  auto service5 = nh.advertiseService("move_front", moveFrontPositionRequest);
+  auto service6 = nh.advertiseService("move_behind", moveBehindPositionRequest);
+
+  auto service7 = nh.advertiseService("maintain_top_right", maintainTopRightRequest);
+  auto service8 = nh.advertiseService("maintain_behind_right", maintainBehindRightRequest);
+  auto service9 = nh.advertiseService("maintain_bottom_left", maintainBottomLeftRequest);
+  auto service10 = nh.advertiseService("maintain_front_left", maintainFrontLeftRequest);
+
+  auto service11 = nh.advertiseService("do_rotation_right", doRotationRightRequest);
+  auto service12 = nh.advertiseService("do_rotation_left", doRotationLeftRequest);
+
+  auto service13 = nh.advertiseService("leave_maintain_right", leaveMantainRightRequest);
+  auto service14 = nh.advertiseService("leave_maintain_left", leaveMantainLeftRequest);
+
+  auto service15 = nh.advertiseService("reset_environment", resetEnvironmentRequest);
+  auto service16 = nh.advertiseService("start_position_right", startPositionRightRequest);
+  auto service17 = nh.advertiseService("start_position_left", startPositionLeftRequest);
+
+  auto service18 = nh.advertiseService("pick_right", pickRightRequest);
+  auto service19 = nh.advertiseService("pick_left", pickLeftRequest);
+  
+
+
+  ros::AsyncSpinner spinner(2);
   spinner.start();
-  //trajectory_msgs/JointTrajectory
-  //ros::Publisher traj_pub = nh.advertise<trajectory_msgs::JointTrajectory>("joint_path_command",100);
 
   planning_scene_diff_client = nh.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
   planning_scene_diff_client.waitForExistence();
 
+  
   planning_scene_diff_publisher = nh.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
   ros::WallDuration sleep_t(0.5);
   while (planning_scene_diff_publisher.getNumSubscribers() < 1)
@@ -943,24 +1113,13 @@ int main(int argc, char** argv)
 
   ros::WallDuration(1.0).sleep();
 
-  moveit::planning_interface::MoveGroupInterface panda1Group("panda_1_arm");
+moveit::planning_interface::MoveGroupInterface panda1Group("panda_1_arm");
   moveit::planning_interface::MoveGroupInterface panda2Group("panda_2_arm");
 
   panda1Group.setPlanningTime(20.0);
   panda2Group.setPlanningTime(20.0);
 
   resetBehaviorAndPickFromStart();
-  moveWorkPosition(1);
-  leaveObjectAndRetreat(1); 
-
-  moveLeftPosition();
-
-  rotateTopFace(); 
-  rotateBottomFace();
-  rotateRightFace();
-  rotateLeftFace();
-  rotateBehindFace();
-  rotateFrontFace();
 
   ros::waitForShutdown();
   return 0;
