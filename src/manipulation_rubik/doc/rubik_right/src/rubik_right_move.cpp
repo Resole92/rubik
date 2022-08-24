@@ -31,6 +31,7 @@
 // TF2
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+//#include <src/manipulation_rubik/doc/arm/ArmBase.h>
 
 enum robotPositionSet { Left, Top, Right, Bottom, Front, Behind};
 enum robotMaintainPosition { TopRight, BehindRight, BottomLeft, FrontLeft, None};
@@ -1067,6 +1068,8 @@ void rotateFrontFace()
 
 int main(int argc, char** argv)
 {
+  //ArmBase 
+
   ros::init(argc, argv, "rubik_right_move");
   ros::NodeHandle nh;
 

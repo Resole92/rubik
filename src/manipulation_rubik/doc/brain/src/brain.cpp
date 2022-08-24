@@ -10,7 +10,8 @@
 // ROS
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
-//#include <manipulation_rubik/MoveLeft.h>
+#include <manipulation_rubik/ResolveConfiguration.h>
+#include <manipulation_rubik/MoveConfiguration.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -58,6 +59,8 @@ ros::ServiceClient clientStartPositionLeft;
 
 ros::ServiceClient clientPickRight;
 ros::ServiceClient clientPickLeft;
+
+ros::ServiceClient clientResolveConfiguration;
 
 void moveLeftPosition()
 {
@@ -240,15 +243,43 @@ int main(int argc, char** argv)
   clientPickRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_right");
   clientPickLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_left");
 
+  clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
   pickRight();
   moveLeftPosition();
+
+  manipulation_rubik::ResolveConfiguration srv;
+  clientResolveConfiguration.call(srv);
+  auto moves = srv.response.result;
+  //auto numberOfMoves = sizeof(moves)/sizeof(moves[0]);
+  //ROS_INFO(std::to_string(numberOfMoves) + " moves");
+  for(int i = 0; i < 5; i++)
+  {
+    if(moves[i].Move == "Top")
+    {
+        rotateTopFace(); 
+    }
+    if(moves[i].Move == "Bottom")
+    {
+        rotateBottomFace(); 
+    }
+    if(moves[i].Move == "Right")
+    {
+        rotateRightFace(); 
+    }
+    if(moves[i].Move == "Left")
+    {
+        rotateLeftFace(); 
+    }
+    if(moves[i].Move == "Behind")
+    {
+        rotateBehindFace(); 
+    }
+    if(moves[i].Move == "Front")
+    {
+        rotateFrontFace(); 
+    }
+  }
   
-  rotateTopFace(); 
-  rotateBottomFace();
-  rotateRightFace();
-  rotateLeftFace();
-  rotateBehindFace();
-  rotateFrontFace();
 
   ros::waitForShutdown();
   return 0;

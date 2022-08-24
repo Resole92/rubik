@@ -40,13 +40,14 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 add_message_files(
   FILES
-  MoveLeft.msg
+  MoveConfiguration.msg
 )
 
 
 add_service_files(
   FILES
   LfMoveLeft.srv
+  ResolveConfiguration.srv
 )
 
 
@@ -84,4 +85,7 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_
 
 add_subdirectory(doc/rubik_right)
 add_subdirectory(doc/brain)
+add_subdirectory(doc/logic)
+add_subdirectory(doc/eyes)
+
 
