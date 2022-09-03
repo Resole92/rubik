@@ -37,27 +37,27 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
 {
 
     manipulation_rubik::MoveConfiguration move1;
-    move1.Direction = "Up";
+    move1.IsClockWise = true;
     move1.Move = "Top";
     res.result.push_back(move1);
 
     manipulation_rubik::MoveConfiguration move2;
-    move2.Direction = "Up";
+    move2.IsClockWise = true;
     move2.Move = "Bottom";
     res.result.push_back(move2);
 
     manipulation_rubik::MoveConfiguration move3;
-    move3.Direction = "Up";
+    move3.IsClockWise = false;
     move3.Move = "Bottom";
     res.result.push_back(move3);
 
     manipulation_rubik::MoveConfiguration move4;
-    move4.Direction = "Up";
+    move4.IsClockWise = false;
     move4.Move = "Left";
     res.result.push_back(move4);
 
     manipulation_rubik::MoveConfiguration move5;
-    move5.Direction = "Up";
+    move5.IsClockWise = false;
     move5.Move = "Front";
     res.result.push_back(move5);
 

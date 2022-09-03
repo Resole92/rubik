@@ -1,2 +1,2 @@
 string Move
-string Direction
+bool IsClockWise

@@ -48,6 +48,7 @@ add_service_files(
   FILES
   LfMoveLeft.srv
   ResolveConfiguration.srv
+  RotateCube.srv
 )
 
 

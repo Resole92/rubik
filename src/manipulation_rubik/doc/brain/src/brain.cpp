@@ -12,6 +12,7 @@
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/ResolveConfiguration.h>
 #include <manipulation_rubik/MoveConfiguration.h>
+#include <manipulation_rubik/RotateCube.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -33,6 +34,11 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
 
+enum objectMainteined { None, TopRight, BehindRight, BottomLeft, FrontLeft};
+enum objectMovement { NoMovement, Left, Top, Right, Bottom, Front, Behind};
+
+objectMainteined MainteinedStatus = None;
+objectMovement LastMovement = NoMovement; 
 
 ros::ServiceClient clientLeft;
 ros::ServiceClient clientRight;
@@ -61,6 +67,8 @@ ros::ServiceClient clientPickRight;
 ros::ServiceClient clientPickLeft;
 
 ros::ServiceClient clientResolveConfiguration;
+
+
 
 void moveLeftPosition()
 {
@@ -134,15 +142,17 @@ void leaveMaintainLeft()
   clientLeaveMaintainLeft.call(srv);
 }
 
-void doRotationRight()
+void doRotationRight(bool isClockWise)
 {
-  manipulation_rubik::LfMoveLeft srv;
+  manipulation_rubik::RotateCube srv;
+  srv.request.isClockWise = isClockWise;
   clientDoRotationRight.call(srv);
 }
 
-void doRotationLeft()
+void doRotationLeft(bool isClockWise)
 {
-  manipulation_rubik::LfMoveLeft srv;
+  manipulation_rubik::RotateCube srv;
+  srv.request.isClockWise = isClockWise;
   clientDoRotationLeft.call(srv);
 }
 
@@ -158,59 +168,174 @@ void pickLeft()
   clientPickLeft.call(srv);
 }
 
-
-void rotateTopFace()
+void maintainFromTopRightToBehindRight()
 {
-  moveLeftPosition();
-  maintainTopRight();
-  leaveMaintainRight();
-  moveTopPosition();
-  doRotationRight();
+    maintainBottomLeft();
+    leaveMaintainLeft();
+    maintainBehindRight();
+    leaveMaintainRight();
 }
 
-void rotateRightFace()
+void maintainFromBehindRightToTopRight()
 {
-  moveLeftPosition();
-  maintainTopRight();
-  leaveMaintainRight();
-  moveRightPosition();
-  doRotationRight();
+    maintainBottomLeft();
+    leaveMaintainLeft();
+    maintainTopRight();
+    leaveMaintainRight();
 }
 
-void rotateBehindFace()
+void maintainFromFrontLeftToBottomLeft()
 {
-  moveLeftPosition();
-  maintainBehindRight();
-  leaveMaintainRight();
-  moveBehindPosition();
-  doRotationRight();
+    maintainTopRight();
+    leaveMaintainRight();
+    maintainBottomLeft();
+    leaveMaintainLeft();
 }
 
-void rotateBottomFace()
+void maintainFromBottomLeftToFrontLeft()
 {
-  moveRightPosition();
-  maintainBottomLeft();
-  leaveMaintainLeft();
-  moveBottomPosition();
-  doRotationLeft();
+    maintainTopRight();
+    leaveMaintainRight();
+    maintainFrontLeft();
+    leaveMaintainLeft();
 }
 
-void rotateLeftFace()
+
+void rotateTopFace(bool isClockWise)
 {
-  moveRightPosition();
-  maintainBottomLeft();
-  leaveMaintainLeft();
-  moveLeftPosition();
-  doRotationLeft();
+
+  if(LastMovement != Top)
+  {
+    if(MainteinedStatus == BehindRight)
+    {
+       maintainFromBehindRightToTopRight();
+    }
+    else
+    {
+        maintainTopRight();
+    }
+    MainteinedStatus = TopRight;
+
+    leaveMaintainRight();
+    moveTopPosition();
+  }
+
+  doRotationRight(isClockWise);
+  LastMovement = Top;
 }
 
-void rotateFrontFace()
+void rotateRightFace(bool isClockWise)
 {
-  moveRightPosition();
-  maintainFrontLeft();
-  leaveMaintainLeft();
-  moveFrontPosition();
-  doRotationLeft();
+  if(LastMovement != Right)
+  {
+    if(MainteinedStatus == BehindRight)
+    {
+      maintainFromBehindRightToTopRight();
+    }
+    else
+    {
+      maintainTopRight();
+    }
+   
+    MainteinedStatus = TopRight;
+
+    leaveMaintainRight();
+    moveRightPosition();
+  }
+
+  doRotationRight(isClockWise);
+  LastMovement = Right;
+}
+
+void rotateBehindFace(bool isClockWise)
+{
+  if(LastMovement != Behind)
+  {
+    if(MainteinedStatus == TopRight)
+    {
+       maintainFromTopRightToBehindRight();
+    }
+    else
+    {
+      maintainBehindRight();
+    }
+
+    MainteinedStatus = BehindRight;
+
+    leaveMaintainRight();
+    moveBehindPosition();
+  }
+
+  doRotationRight(isClockWise);
+  LastMovement = Behind;
+}
+
+void rotateBottomFace(bool isClockWise)
+{
+  if(LastMovement != Bottom)
+  {
+    if(MainteinedStatus == FrontLeft)
+    {
+      maintainFromFrontLeftToBottomLeft();
+    }
+    else
+    {
+      maintainBottomLeft(); 
+    }
+
+    MainteinedStatus = BottomLeft;
+
+    leaveMaintainLeft();
+    moveBottomPosition();
+  }
+
+  doRotationLeft(isClockWise);
+  LastMovement = Bottom;
+}
+
+void rotateLeftFace(bool isClockWise)
+{
+  if(LastMovement != Left)
+  {
+    if(MainteinedStatus == FrontLeft)
+    {
+      maintainFromFrontLeftToBottomLeft();
+    }
+    else
+    {
+      maintainBottomLeft();
+    }
+
+    MainteinedStatus = BottomLeft;
+    leaveMaintainLeft();
+    moveLeftPosition();
+    }
+
+  doRotationLeft(isClockWise);
+  LastMovement = Left;
+}
+
+void rotateFrontFace(bool isClockWise)
+{
+  if(LastMovement != Front)
+  {
+    if(MainteinedStatus == BottomLeft)
+    {
+      maintainFromBottomLeftToFrontLeft();
+    }
+    else
+    {
+      maintainFrontLeft();
+    }
+
+    MainteinedStatus = FrontLeft;
+
+    leaveMaintainLeft();
+    moveFrontPosition();
+  }
+
+  doRotationLeft(isClockWise);
+  LastMovement = Front;
 }
 
 int main(int argc, char** argv)
@@ -230,8 +355,8 @@ int main(int argc, char** argv)
   clientMaintainBottomLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_bottom_left");
   clientMaintainFrontLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_front_left");
 
-  clientDoRotationRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("do_rotation_right");
-  clientDoRotationLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("do_rotation_left");
+  clientDoRotationRight = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_right");
+  clientDoRotationLeft = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_left");
 
   clientLeaveMaintainRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_right");
   clientLeaveMaintainLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_left");
@@ -246,6 +371,8 @@ int main(int argc, char** argv)
   clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
   pickRight();
   moveLeftPosition();
+  maintainTopRight();
+  MainteinedStatus = TopRight;
 
   manipulation_rubik::ResolveConfiguration srv;
   clientResolveConfiguration.call(srv);
@@ -256,31 +383,31 @@ int main(int argc, char** argv)
   {
     if(moves[i].Move == "Top")
     {
-        rotateTopFace(); 
+        rotateTopFace(moves[i].IsClockWise); 
     }
     if(moves[i].Move == "Bottom")
     {
-        rotateBottomFace(); 
+        rotateBottomFace(moves[i].IsClockWise); 
     }
     if(moves[i].Move == "Right")
     {
-        rotateRightFace(); 
+        rotateRightFace(moves[i].IsClockWise); 
     }
     if(moves[i].Move == "Left")
     {
-        rotateLeftFace(); 
+        rotateLeftFace(moves[i].IsClockWise); 
     }
     if(moves[i].Move == "Behind")
     {
-        rotateBehindFace(); 
+        rotateBehindFace(moves[i].IsClockWise); 
     }
     if(moves[i].Move == "Front")
     {
-        rotateFrontFace(); 
+        rotateFrontFace(moves[i].IsClockWise); 
     }
   }
   
 
-  ros::waitForShutdown();
+  //ros::waitForShutdown();
   return 0;
 }

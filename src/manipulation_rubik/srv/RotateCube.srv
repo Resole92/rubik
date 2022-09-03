@@ -1,0 +1,3 @@
+bool isClockWise
+---
+std_msgs/String result

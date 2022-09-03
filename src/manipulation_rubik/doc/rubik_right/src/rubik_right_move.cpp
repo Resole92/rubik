@@ -10,7 +10,7 @@
 // ROS
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
-//#include <manipulation_rubik/MoveLeft.h>
+#include <manipulation_rubik/RotateCube.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -59,8 +59,8 @@ ros::Publisher planning_scene_diff_publisher;
 robotPositionSet robotPositionSet1;
 robotPositionSet robotPositionSet2;
 
-robotMaintainPosition robotMaintainPosition1;
-robotMaintainPosition robotMaintainPosition2;
+robotMaintainPosition robotMaintainPosition1 = None;
+robotMaintainPosition robotMaintainPosition2 = None;
 
 
 const std::string pandaArmNumber = "_1";
@@ -172,14 +172,17 @@ bool changeCheckContactWithObject(std::string objectName, bool disable, int pand
   planning_scene_diff_client.call(srv);
 }
 
-void openGripperManually(int pandaIdentifier, std::string objectToDetach = rubikName)
+void openGripperManually(int pandaIdentifier, bool isObjectToDetach, std::string objectToDetach = rubikName)
 {
   auto groupName = "panda_" + std::to_string(pandaIdentifier) + "_effector";
   moveit::planning_interface::MoveGroupInterface group(groupName); 
 
   auto joint_position = {0.04, 0.04};
   auto success = moveToJointPosition(group, joint_position);
-  group.detachObject(objectToDetach);
+  if(isObjectToDetach)
+  {
+    group.detachObject(objectToDetach);
+  }
 }
 
 void closedGripperManually(int pandaIdentifier, bool isMainteined = false, std::string objectToDetach = rubikName)
@@ -728,6 +731,11 @@ bool pickRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation
   ROS_INFO("Pick Right");
   pickObject(1);
   moveWorkPosition(1);
+
+  auto groupName = "panda_1_effector";
+  moveit::planning_interface::MoveGroupInterface group(groupName); 
+  group.detachObject(rubikName);
+
   return true;
 }
 
@@ -736,6 +744,11 @@ bool pickLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_
   ROS_INFO("Pick Left");
   pickObject(2);
   moveWorkPosition(2);
+
+  auto groupName = "panda_2_effector";
+  moveit::planning_interface::MoveGroupInterface group(groupName); 
+  group.detachObject(rubikName);
+
   return true;
 }
 
@@ -743,9 +756,7 @@ void resetBehaviorAndPickFromStart()
 {
   addCollisionObjects();
   startPosition(1);
-  startPosition(2);
-  //pickObject(1);
-  
+  startPosition(2);  
 }
 
 bool changeCheckCustom(bool disable)
@@ -803,7 +814,7 @@ void leaveMantainAndRetreat(int pandaIdentifier)
     auto targetPose = workPose1;
     auto rotation = getRotationEndEffector(pandaIdentifier);
 
-    openGripperManually(pandaIdentifier);
+    openGripperManually(pandaIdentifier, false);
 
     if(robotMaintainPosition1 == FrontLeft)
     {
@@ -827,7 +838,7 @@ void leaveMantainAndRetreat(int pandaIdentifier)
     auto targetPose = workPose2;
     auto rotation = getRotationEndEffector(pandaIdentifier);
 
-    openGripperManually(pandaIdentifier);
+    openGripperManually(pandaIdentifier, false);
 
     if(robotMaintainPosition2 == BehindRight)
     {
@@ -863,7 +874,7 @@ bool leaveMantainLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manip
 
 void leaveObjectAndRetreat(int pandaIdentifier, std::string objectName = rubikName)
 {
-  openGripperManually(pandaIdentifier);
+  openGripperManually(pandaIdentifier, true);
 
   if(pandaIdentifier == 1 && robotPositionSet1 == Right)
   {
@@ -911,8 +922,14 @@ void maintainObjectPanda(robotMaintainPosition mantainPosition, std::string obje
   geometry_msgs::Pose targetPose;
   int pandaIdentifier;
 
+  if(mantainPosition == robotMaintainPosition1 ||  mantainPosition == robotMaintainPosition2) 
+  {
+    return;
+  }
+
   if(mantainPosition == FrontLeft)
   {
+    moveRightPosition();
     targetPose = workPose1;
     pandaIdentifier = 1;
     robotMaintainPosition1 = mantainPosition;
@@ -926,6 +943,7 @@ void maintainObjectPanda(robotMaintainPosition mantainPosition, std::string obje
 
   if(mantainPosition == BottomLeft)
   {
+    moveRightPosition();
     targetPose = workPose1;
     pandaIdentifier = 1;
     robotMaintainPosition1 = mantainPosition;
@@ -935,6 +953,7 @@ void maintainObjectPanda(robotMaintainPosition mantainPosition, std::string obje
 
   if(mantainPosition == BehindRight)
   {
+    moveLeftPosition();
     targetPose = workPose2;
     pandaIdentifier = 2;
     robotMaintainPosition2 = mantainPosition;
@@ -948,6 +967,7 @@ void maintainObjectPanda(robotMaintainPosition mantainPosition, std::string obje
 
   if(mantainPosition == TopRight)
   {
+    moveLeftPosition();
     targetPose = workPose2;
     pandaIdentifier = 2;
     robotMaintainPosition2 = mantainPosition;
@@ -988,82 +1008,58 @@ bool maintainFrontLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, mani
   return true;
 }
 
-void beginARotation(int pandaIdentifier, std::string objectName = rubikName)
+void antiClockWiseRotation(int pandaIdentifier, double rotation, std::string objectName = rubikName)
 {
-  auto rotation = getRotationEndEffector(pandaIdentifier);
-
   keepObject(pandaIdentifier,objectName);
   rotateEndEffector(pandaIdentifier, -rotation);
   leaveObjectAndRetreat(pandaIdentifier, rubikName); 
   rotateEndEffector(pandaIdentifier, rotation); 
 }
 
-bool doRotationLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+void clockWiseRotation(int pandaIdentifier, double rotation, std::string objectName = rubikName)
+{
+  rotateEndEffector(pandaIdentifier, -rotation); 
+  keepObject(pandaIdentifier,objectName);
+  rotateEndEffector(pandaIdentifier, rotation);
+  leaveObjectAndRetreat(pandaIdentifier, rubikName); 
+}
+
+void beginARotation(int pandaIdentifier, bool isClockWise, std::string objectName = rubikName)
+{
+  auto rotation = getRotationEndEffector(pandaIdentifier);
+  auto isNegative = rotation < 0;
+
+  if(isNegative && isClockWise)
+  {
+    antiClockWiseRotation(pandaIdentifier, rotation, objectName);
+  }
+  else if(!isNegative && isClockWise)
+  {
+    clockWiseRotation(pandaIdentifier, rotation, objectName);
+  }
+  else if(isNegative && !isClockWise)
+  {
+    clockWiseRotation(pandaIdentifier, rotation, objectName);
+  }
+  else if(isNegative && !isClockWise)
+  {
+    antiClockWiseRotation(pandaIdentifier, rotation, objectName);
+  }
+
+}
+
+bool doRotationLeftRequest(manipulation_rubik::RotateCube::Request &req, manipulation_rubik::RotateCube::Response &res)
 {
   ROS_INFO("Do Rotation Left");
-  beginARotation(2);
+  beginARotation(2, req.isClockWise);
   return true;
 }
 
-bool doRotationRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+bool doRotationRightRequest(manipulation_rubik::RotateCube::Request &req, manipulation_rubik::RotateCube::Response &res)
 {
   ROS_INFO("Do Rotation Right");
-  beginARotation(1);
+  beginARotation(1, req.isClockWise);
   return true;
-}
-
-void rotateTopFace()
-{
-  moveLeftPosition();
-  maintainObjectPanda(TopRight);
-  leaveMantainAndRetreat(1);
-  moveTopPosition();
-  beginARotation(1);
-}
-
-void rotateRightFace()
-{
-  moveLeftPosition();
-  maintainObjectPanda(TopRight);
-  leaveMantainAndRetreat(1);
-  moveRightPosition();
-  beginARotation(1);
-}
-
-void rotateBehindFace()
-{
-  moveLeftPosition();
-  maintainObjectPanda(BehindRight);
-  leaveMantainAndRetreat(1);
-  moveBehindPosition();
-  beginARotation(1);
-}
-
-void rotateBottomFace()
-{
-  moveRightPosition();
-  maintainObjectPanda(BottomLeft);
-  leaveMantainAndRetreat(2);
-  moveBottomPosition();
-  beginARotation(2);
-}
-
-void rotateLeftFace()
-{
-  moveRightPosition();
-  maintainObjectPanda(BottomLeft);
-  leaveMantainAndRetreat(2);
-  moveLeftPosition();
-  beginARotation(2);
-}
-
-void rotateFrontFace()
-{
-  moveRightPosition();
-  maintainObjectPanda(FrontLeft);
-  leaveMantainAndRetreat(2);
-  moveFrontPosition();
-  beginARotation(2);
 }
 
 int main(int argc, char** argv)
@@ -1116,7 +1112,7 @@ int main(int argc, char** argv)
 
   ros::WallDuration(1.0).sleep();
 
-moveit::planning_interface::MoveGroupInterface panda1Group("panda_1_arm");
+  moveit::planning_interface::MoveGroupInterface panda1Group("panda_1_arm");
   moveit::planning_interface::MoveGroupInterface panda2Group("panda_2_arm");
 
   panda1Group.setPlanningTime(20.0);
