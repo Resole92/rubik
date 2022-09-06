@@ -46,17 +46,15 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
 
     
     char solutionFileName[] = "solution.txt";
+
     //char commandClingo[] = "clingo src/manipulation_rubik/doc/logic/rubik.lp >> ";
-
     //string command = strcat(commandClingo, solutionFileName);
-
     //int n = command.length();
-    //char char_array[n + 1];
+    //char char_array[n];
     //strcpy(char_array, command.c_str());
-
-    //cout << char_array;
-
     //system(char_array);
+    
+    system("clingo src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
 
    
     // regex expression for pattern to be searched 
@@ -78,8 +76,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
         auto complexMove = match.str(0);
         string moveTrunc = complexMove.substr(5, complexMove.length() - 6);
 
-        //ROS_INFO(moveTrunc);
-        cout << "Match: " << moveTrunc + "\n";
+        //cout << "Match: " << moveTrunc + "\n";
         i++;
  
         // suffix to find the rest of the string.
@@ -92,7 +89,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
 
         while (regex_search(moveTrunc, tokenMatch, tokenRegex)) {
           auto token = tokenMatch.str(0);
-          cout << "   Token: " << token + "\n";
+          //cout << "   Token: " << token + "\n";
           j++;
 
           tokens.push_back(token);
@@ -103,9 +100,12 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
 
         manipulation_rubik::MoveConfiguration move;
 
+        auto actualMove = tokens[0];
         auto angleMovement = tokens[1];
         auto face = tokens[2];
         auto clockWise =  tokens[3] == "1";
+
+        res.numberOfMoves = stoi(actualMove);
 
         move.IsClockWise = clockWise;
 
@@ -156,8 +156,11 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     }
     else cout << "Unable to open file"; 
 
-    //remove(solutionFileName);
-
+    remove(solutionFileName);
+    for(int i = 0; i < res.numberOfMoves; i++)
+    {
+      cout << "Move " << i + 1 << ": " << res.result[i]; 
+    }
 
 
     manipulation_rubik::MoveConfiguration move1;

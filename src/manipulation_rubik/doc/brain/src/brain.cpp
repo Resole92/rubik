@@ -407,9 +407,9 @@ int main(int argc, char** argv)
   manipulation_rubik::ResolveConfiguration srv;
   clientResolveConfiguration.call(srv);
   auto moves = srv.response.result;
-  //auto numberOfMoves = sizeof(moves)/sizeof(moves[0]);
-  //ROS_INFO(std::to_string(numberOfMoves) + " moves");
-  for(int i = 0; i < 1; i++)
+  auto numberOfMoves = srv.response.numberOfMoves;
+
+  for(int i = 0; i < numberOfMoves; i++)
   {
     if(moves[i].Move == "Top")
     {

@@ -1,2 +1,3 @@
 ---
+int32 numberOfMoves
 MoveConfiguration[] result
