@@ -66,6 +66,9 @@ ros::ServiceClient clientStartPositionLeft;
 ros::ServiceClient clientPickRight;
 ros::ServiceClient clientPickLeft;
 
+ros::ServiceClient clientPlaceRight;
+ros::ServiceClient clientPlaceLeft;
+
 ros::ServiceClient clientResolveConfiguration;
 
 
@@ -168,6 +171,30 @@ void pickLeft()
   clientPickLeft.call(srv);
 }
 
+void placeRight()
+{
+  manipulation_rubik::LfMoveLeft srv;
+  clientPlaceRight.call(srv);
+}
+
+void placeLeft()
+{
+  manipulation_rubik::LfMoveLeft srv;
+  clientPlaceLeft.call(srv);
+}
+
+void startPositionRight()
+{
+  manipulation_rubik::LfMoveLeft srv;
+  clientStartPositionRight.call(srv);
+}
+
+void startPositionLeft()
+{
+  manipulation_rubik::LfMoveLeft srv;
+  clientStartPositionLeft.call(srv);
+}
+
 void maintainFromTopRightToBehindRight()
 {
     maintainBottomLeft();
@@ -199,7 +226,6 @@ void maintainFromBottomLeftToFrontLeft()
     maintainFrontLeft();
     leaveMaintainLeft();
 }
-
 
 void rotateTopFace(bool isClockWise)
 {
@@ -338,6 +364,7 @@ void rotateFrontFace(bool isClockWise)
   LastMovement = Front;
 }
 
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "brain");
@@ -368,6 +395,9 @@ int main(int argc, char** argv)
   clientPickRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_right");
   clientPickLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_left");
 
+  clientPlaceRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_right");
+  clientPlaceLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_left");
+
   clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
   pickRight();
   moveLeftPosition();
@@ -379,7 +409,7 @@ int main(int argc, char** argv)
   auto moves = srv.response.result;
   //auto numberOfMoves = sizeof(moves)/sizeof(moves[0]);
   //ROS_INFO(std::to_string(numberOfMoves) + " moves");
-  for(int i = 0; i < 5; i++)
+  for(int i = 0; i < 1; i++)
   {
     if(moves[i].Move == "Top")
     {
@@ -407,6 +437,18 @@ int main(int argc, char** argv)
     }
   }
   
+  if(MainteinedStatus == TopRight || MainteinedStatus == BehindRight)
+  {
+    startPositionRight();
+    placeLeft();
+    startPositionLeft();
+  }
+  else
+  {
+    startPositionLeft();
+    placeRight();
+    startPositionRight();
+  }
 
   //ros::waitForShutdown();
   return 0;

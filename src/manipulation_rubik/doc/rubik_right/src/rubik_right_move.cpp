@@ -752,6 +752,42 @@ bool pickLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_
   return true;
 }
 
+void placeObject(int pandaIdentifier)
+{
+  changeCheckContactWithObject(rubikName, true, pandaIdentifier);
+  startPosition(pandaIdentifier);
+
+  geometry_msgs::Pose pose;
+  pose.position.x = xTablePosition;
+  pose.position.y = yTablePosition;
+  pose.position.z = tableHeight + rubikDimension/2 + endEffectorLength - 0.01;
+
+  moveToCartesianPath(pandaIdentifier, pose);
+  openGripperManually(pandaIdentifier, true);
+  ros::WallDuration(1.0).sleep();
+}
+
+bool placeRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Place Right");
+  auto groupName = "panda_1_effector";
+  moveit::planning_interface::MoveGroupInterface group(groupName); 
+  group.attachObject(rubikName);
+  placeObject(1);
+  return true;
+}
+
+bool placeLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Place Left");
+
+  auto groupName = "panda_2_effector";
+  moveit::planning_interface::MoveGroupInterface group(groupName); 
+  group.attachObject(rubikName);
+  placeObject(2);
+  return true;
+}
+
 void resetBehaviorAndPickFromStart()
 {
   addCollisionObjects();
@@ -1093,6 +1129,9 @@ int main(int argc, char** argv)
 
   auto service18 = nh.advertiseService("pick_right", pickRightRequest);
   auto service19 = nh.advertiseService("pick_left", pickLeftRequest);
+
+  auto service20 = nh.advertiseService("place_right", placeRightRequest);
+  auto service21 = nh.advertiseService("place_left", placeLeftRequest);
   
 
 
