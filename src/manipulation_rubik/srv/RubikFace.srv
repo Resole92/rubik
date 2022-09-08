@@ -1,0 +1,6 @@
+string face
+string[] colors
+int32 dimension
+bool isNewCube
+---
+string response

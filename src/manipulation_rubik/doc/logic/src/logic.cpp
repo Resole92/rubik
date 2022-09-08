@@ -6,11 +6,11 @@
 #include <franka_gripper/MoveAction.h>
 #include <franka_gripper/StopAction.h>
 
-
 // ROS
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/ResolveConfiguration.h>
+#include <manipulation_rubik/RubikFace.h>
 #include <manipulation_rubik/MoveConfiguration.h>
 #include "std_msgs/String.h"
 
@@ -28,7 +28,6 @@
 #include <moveit_msgs/ApplyPlanningScene.h>
 #include <moveit_msgs/PlanningScene.h>
 
-
 // TF2
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
@@ -41,10 +40,88 @@
 
 using namespace std;
 
+class Face {
+  public:
+    vector<string> colors;   
+    string name;
+};
+
+class Rubik
+{
+    public: 
+    int dimension;
+    vector<Face> faces;
+
+    void addFace(Face targetFace)
+    {
+
+        for(int i = 0; i < faces.size(); i++)
+        {
+            auto face = faces[i];
+            if(face.name == targetFace.name)
+            {
+                faces[i].colors = targetFace.colors;
+                cout << "Replace face " << faces[i].name << " with first color " << faces[i].colors[0] << "\n";
+                return;
+            }
+        }
+        
+        cout << "Add new face " << targetFace.name << " with first color " << targetFace.colors[0] << "\n";
+        faces.push_back(targetFace);
+
+    }
+};
+
+Rubik Cube;
+
+bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_rubik::RubikFace::Response &res)
+{
+    Face face;
+    face.name = req.face;
+
+    auto totalRectangle = req.dimension * req.dimension;
+
+    if(req.colors.size() != totalRectangle)
+    {
+         res.response = "Fail! Face requested dimension is " + std::to_string(req.colors.size()) + " but dimension pass is " + std::to_string(totalRectangle);
+        return true;
+    }
+
+    for(int i = 0; i < totalRectangle; i++)
+    {
+        auto color = req.colors[i];
+        face.colors.push_back(color);
+    }
+
+    if(req.isNewCube)
+    {
+        Cube.faces.clear();
+        Cube.dimension = req.dimension;
+    }
+    else
+    {
+        if(Cube.dimension == 0)
+        {
+            res.response = "No cube initialize, please set new cube";
+            return true;
+        }
+
+        if(req.dimension != Cube.dimension)
+        {
+            res.response = "Fail! Actual cube dimension is " + std::to_string(Cube.dimension) + " but dimension pass is " + std::to_string(req.dimension);
+            return true;
+        }
+
+        
+    }
+
+    Cube.addFace(face);
+
+    return true;
+}
+
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
 {
-
-    
     char solutionFileName[] = "solution.txt";
 
     //char commandClingo[] = "clingo src/manipulation_rubik/doc/logic/rubik.lp >> ";
@@ -53,9 +130,8 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     //char char_array[n];
     //strcpy(char_array, command.c_str());
     //system(char_array);
-    
-    system("clingo src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
 
+    system("clingo src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
    
     // regex expression for pattern to be searched 
     regex moveRegex ("move\\(\\d+,\\w+,\\d,-?\\d\\)"); 
@@ -147,9 +223,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
 
         res.result.push_back(move);
 
-      }
-
-
+        }
        //cout << line << '\n';
       }
       myfile.close();
@@ -162,7 +236,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
       cout << "Move " << i + 1 << ": " << res.result[i]; 
     }
 
-
+    /*
     manipulation_rubik::MoveConfiguration move1;
     move1.IsClockWise = true;
     move1.Move = "Bottom";
@@ -187,6 +261,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     move5.IsClockWise = true;
     move5.Move = "Right";
     //res.result.push_back(move5);
+    */
 
     return true;
 }
@@ -198,6 +273,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   auto service1 = nh.advertiseService("resolve_configuration", resolveConfigurationRequest);
+  auto service2 = nh.advertiseService("rubik_face", rubikFaceRequest);
   
   ros::AsyncSpinner spinner(2);
   spinner.start();
@@ -205,3 +281,4 @@ int main(int argc, char** argv)
   ros::waitForShutdown();
   return 0;
 }
+

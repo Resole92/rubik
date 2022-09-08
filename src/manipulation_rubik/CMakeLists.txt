@@ -49,6 +49,7 @@ add_service_files(
   LfMoveLeft.srv
   ResolveConfiguration.srv
   RotateCube.srv
+  RubikFace.srv
 )
 
 
