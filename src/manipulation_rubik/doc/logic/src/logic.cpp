@@ -11,6 +11,8 @@
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/ResolveConfiguration.h>
 #include <manipulation_rubik/RubikFace.h>
+#include <manipulation_rubik/CubeDto.h>
+#include <manipulation_rubik/RubikCubies.h>
 #include <manipulation_rubik/MoveConfiguration.h>
 #include "std_msgs/String.h"
 
@@ -40,6 +42,14 @@
 
 using namespace std;
 
+class Cube
+{
+    public:
+     string xColor;
+     string yColor;
+     string zColor;
+};
+
 class Face {
   public:
     vector<string> colors;   
@@ -51,10 +61,114 @@ class Rubik
     public: 
     int dimension;
     vector<Face> faces;
+    vector<Cube> cubies;
 
-    void addFace(Face targetFace)
+    void initialize(int _dimension)
     {
+        dimension = _dimension;
+        faces.clear();
+        cubies.clear();
 
+        for(int i = 0; i < dimension*dimension*dimension; i++)
+        {
+            Cube cube;
+            cubies.push_back(cube);
+        }
+
+        Face faceTop;
+        faceTop.name = "Top";
+        faces.push_back(faceTop);
+
+        Face faceBottom;
+        faceBottom.name = "Bottom";
+        faces.push_back(faceBottom);
+        
+        Face faceLeft;
+        faceLeft.name = "Left";
+        faces.push_back(faceLeft);
+
+        Face faceRight;
+        faceRight.name = "Right";
+        faces.push_back(faceRight);
+        
+        Face faceFront;
+        faceFront.name = "Front";
+        faces.push_back(faceFront);
+
+        Face faceBehind;
+        faceBehind.name = "Behind";
+        faces.push_back(faceBehind);
+
+    }
+
+    void composeCubeFromFace(Face targetFace)
+    {
+        if(targetFace.name == "Top")
+        {
+            if(dimension == 2)
+            {
+                cubies[2].zColor = targetFace.colors[0];
+                cubies[1].zColor = targetFace.colors[1];
+                cubies[3].zColor = targetFace.colors[2];
+                cubies[0].zColor = targetFace.colors[3];
+            }
+            
+        }
+        if(targetFace.name == "Bottom")
+        {
+            if(dimension == 2)
+            {
+                cubies[7].zColor = targetFace.colors[0];
+                cubies[4].zColor = targetFace.colors[1];
+                cubies[6].zColor = targetFace.colors[2];
+                cubies[5].zColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Right")
+        {
+            if(dimension == 2)
+            {
+                cubies[0].yColor = targetFace.colors[0];
+                cubies[1].yColor = targetFace.colors[1];
+                cubies[4].yColor = targetFace.colors[2];
+                cubies[5].yColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Left")
+        {
+            if(dimension == 2)
+            {
+                cubies[2].yColor = targetFace.colors[0];
+                cubies[3].yColor = targetFace.colors[1];
+                cubies[6].yColor = targetFace.colors[2];
+                cubies[7].yColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Front")
+        {
+            if(dimension == 2)
+            {
+                cubies[3].xColor = targetFace.colors[0];
+                cubies[0].xColor = targetFace.colors[1];
+                cubies[7].xColor = targetFace.colors[2];
+                cubies[4].xColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Behind")
+        {
+             if(dimension == 2)
+            {
+                cubies[1].xColor = targetFace.colors[0];
+                cubies[2].xColor = targetFace.colors[1];
+                cubies[5].xColor = targetFace.colors[2];
+                cubies[6].xColor = targetFace.colors[3];
+            }
+        }
+    }
+
+    string addFace(Face targetFace)
+    {
+        
         for(int i = 0; i < faces.size(); i++)
         {
             auto face = faces[i];
@@ -62,17 +176,34 @@ class Rubik
             {
                 faces[i].colors = targetFace.colors;
                 cout << "Replace face " << faces[i].name << " with first color " << faces[i].colors[0] << "\n";
-                return;
+                composeCubeFromFace(targetFace);
+                return "";
             }
         }
-        
-        cout << "Add new face " << targetFace.name << " with first color " << targetFace.colors[0] << "\n";
-        faces.push_back(targetFace);
 
+        string error = "Face " + targetFace.name + " is not present as face on rubik cube";     
+        cout << "Fail! " << error << "\n";
+        return error;
     }
 };
 
-Rubik Cube;
+Rubik RubikCube;
+
+bool rubikCubiesRequest(manipulation_rubik::RubikCubies::Request &req, manipulation_rubik::RubikCubies::Response &res)
+{
+    auto numberOfCubies = RubikCube.cubies.size();
+    for(int i = 0; i < numberOfCubies; i++)
+    {
+        manipulation_rubik::CubeDto cubeDto;
+        cubeDto.Position = i;
+        cubeDto.XColor = RubikCube.cubies[i].xColor;
+        cubeDto.YColor = RubikCube.cubies[i].yColor;
+        cubeDto.ZColor = RubikCube.cubies[i].zColor;
+        res.Cubies.push_back(cubeDto);
+
+    }
+    return true;
+}
 
 bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_rubik::RubikFace::Response &res)
 {
@@ -83,7 +214,7 @@ bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_
 
     if(req.colors.size() != totalRectangle)
     {
-         res.response = "Fail! Face requested dimension is " + std::to_string(req.colors.size()) + " but dimension pass is " + std::to_string(totalRectangle);
+        res.response = "Fail! Face requested dimension is " + std::to_string(req.colors.size()) + " but dimension pass is " + std::to_string(totalRectangle);
         return true;
     }
 
@@ -95,27 +226,25 @@ bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_
 
     if(req.isNewCube)
     {
-        Cube.faces.clear();
-        Cube.dimension = req.dimension;
+        RubikCube.initialize(req.dimension);
     }
     else
     {
-        if(Cube.dimension == 0)
+        if(RubikCube.dimension == 0)
         {
             res.response = "No cube initialize, please set new cube";
             return true;
         }
 
-        if(req.dimension != Cube.dimension)
+        if(req.dimension != RubikCube.dimension)
         {
-            res.response = "Fail! Actual cube dimension is " + std::to_string(Cube.dimension) + " but dimension pass is " + std::to_string(req.dimension);
+            res.response = "Fail! Actual cube dimension is " + std::to_string(RubikCube.dimension) + " but dimension pass is " + std::to_string(req.dimension);
             return true;
         }
-
-        
     }
 
-    Cube.addFace(face);
+    auto error = RubikCube.addFace(face);
+    res.response = error;
 
     return true;
 }
@@ -274,6 +403,7 @@ int main(int argc, char** argv)
 
   auto service1 = nh.advertiseService("resolve_configuration", resolveConfigurationRequest);
   auto service2 = nh.advertiseService("rubik_face", rubikFaceRequest);
+  auto service3 = nh.advertiseService("rubik_cubies", rubikCubiesRequest);
   
   ros::AsyncSpinner spinner(2);
   spinner.start();

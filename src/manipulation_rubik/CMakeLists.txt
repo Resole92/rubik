@@ -41,6 +41,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 add_message_files(
   FILES
   MoveConfiguration.msg
+  CubeDto.msg
 )
 
 
@@ -50,6 +51,7 @@ add_service_files(
   ResolveConfiguration.srv
   RotateCube.srv
   RubikFace.srv
+  RubikCubies.srv
 )
 
 
