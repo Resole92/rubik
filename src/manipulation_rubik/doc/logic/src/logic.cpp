@@ -63,6 +63,71 @@ class Rubik
     vector<Face> faces;
     vector<Cube> cubies;
 
+    void composeCubeFromFace(Face targetFace)
+    {
+        if(targetFace.name == "Top")
+        {
+            if(dimension == 2)
+            {
+                cubies[2].yColor = targetFace.colors[0];
+                cubies[1].yColor = targetFace.colors[1];
+                cubies[3].yColor = targetFace.colors[2];
+                cubies[0].yColor = targetFace.colors[3];
+            }
+            
+        }
+        if(targetFace.name == "Bottom")
+        {
+            if(dimension == 2)
+            {
+                cubies[7].yColor = targetFace.colors[0];
+                cubies[4].yColor = targetFace.colors[1];
+                cubies[6].yColor = targetFace.colors[2];
+                cubies[5].yColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Right")
+        {
+            if(dimension == 2)
+            {
+                cubies[0].xColor = targetFace.colors[0];
+                cubies[1].xColor = targetFace.colors[1];
+                cubies[4].xColor = targetFace.colors[2];
+                cubies[5].xColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Left")
+        {
+            if(dimension == 2)
+            {
+                cubies[2].xColor = targetFace.colors[0];
+                cubies[3].xColor = targetFace.colors[1];
+                cubies[6].xColor = targetFace.colors[2];
+                cubies[7].xColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Front")
+        {
+            if(dimension == 2)
+            {
+                cubies[3].zColor = targetFace.colors[0];
+                cubies[0].zColor = targetFace.colors[1];
+                cubies[7].zColor = targetFace.colors[2];
+                cubies[4].zColor = targetFace.colors[3];
+            }
+        }
+        if(targetFace.name == "Behind")
+        {
+             if(dimension == 2)
+            {
+                cubies[1].zColor = targetFace.colors[0];
+                cubies[2].zColor = targetFace.colors[1];
+                cubies[5].zColor = targetFace.colors[2];
+                cubies[6].zColor = targetFace.colors[3];
+            }
+        }
+    }
+
     void initialize(int _dimension)
     {
         dimension = _dimension;
@@ -77,93 +142,59 @@ class Rubik
 
         Face faceTop;
         faceTop.name = "Top";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceTop.colors.push_back("red");
+        }
+        composeCubeFromFace(faceTop);
         faces.push_back(faceTop);
 
         Face faceBottom;
         faceBottom.name = "Bottom";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceBottom.colors.push_back("orange");
+        }
+        composeCubeFromFace(faceBottom);
         faces.push_back(faceBottom);
         
         Face faceLeft;
         faceLeft.name = "Left";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceLeft.colors.push_back("white");
+        }
+        composeCubeFromFace(faceLeft);
         faces.push_back(faceLeft);
 
         Face faceRight;
         faceRight.name = "Right";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceRight.colors.push_back("yellow");
+        }
+        composeCubeFromFace(faceRight);
         faces.push_back(faceRight);
         
         Face faceFront;
         faceFront.name = "Front";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceFront.colors.push_back("green");
+        }
+        composeCubeFromFace(faceFront);
         faces.push_back(faceFront);
 
         Face faceBehind;
         faceBehind.name = "Behind";
+        for(int i = 0; i < dimension*dimension; i++)
+        {
+            faceBehind.colors.push_back("blue");
+        }
+        composeCubeFromFace(faceBehind);
         faces.push_back(faceBehind);
+        
 
-    }
-
-    void composeCubeFromFace(Face targetFace)
-    {
-        if(targetFace.name == "Top")
-        {
-            if(dimension == 2)
-            {
-                cubies[2].zColor = targetFace.colors[0];
-                cubies[1].zColor = targetFace.colors[1];
-                cubies[3].zColor = targetFace.colors[2];
-                cubies[0].zColor = targetFace.colors[3];
-            }
-            
-        }
-        if(targetFace.name == "Bottom")
-        {
-            if(dimension == 2)
-            {
-                cubies[7].zColor = targetFace.colors[0];
-                cubies[4].zColor = targetFace.colors[1];
-                cubies[6].zColor = targetFace.colors[2];
-                cubies[5].zColor = targetFace.colors[3];
-            }
-        }
-        if(targetFace.name == "Right")
-        {
-            if(dimension == 2)
-            {
-                cubies[0].yColor = targetFace.colors[0];
-                cubies[1].yColor = targetFace.colors[1];
-                cubies[4].yColor = targetFace.colors[2];
-                cubies[5].yColor = targetFace.colors[3];
-            }
-        }
-        if(targetFace.name == "Left")
-        {
-            if(dimension == 2)
-            {
-                cubies[2].yColor = targetFace.colors[0];
-                cubies[3].yColor = targetFace.colors[1];
-                cubies[6].yColor = targetFace.colors[2];
-                cubies[7].yColor = targetFace.colors[3];
-            }
-        }
-        if(targetFace.name == "Front")
-        {
-            if(dimension == 2)
-            {
-                cubies[3].xColor = targetFace.colors[0];
-                cubies[0].xColor = targetFace.colors[1];
-                cubies[7].xColor = targetFace.colors[2];
-                cubies[4].xColor = targetFace.colors[3];
-            }
-        }
-        if(targetFace.name == "Behind")
-        {
-             if(dimension == 2)
-            {
-                cubies[1].xColor = targetFace.colors[0];
-                cubies[2].xColor = targetFace.colors[1];
-                cubies[5].xColor = targetFace.colors[2];
-                cubies[6].xColor = targetFace.colors[3];
-            }
-        }
     }
 
     string addFace(Face targetFace)
@@ -188,6 +219,110 @@ class Rubik
 };
 
 Rubik RubikCube;
+
+void example1()
+{
+    Face faceTop;
+    faceTop.name = "Top";
+    faceTop.colors.push_back("red");
+    faceTop.colors.push_back("green");
+    faceTop.colors.push_back("red");
+    faceTop.colors.push_back("green");
+    RubikCube.addFace(faceTop);
+
+    Face faceBottom;
+    faceBottom.name = "Bottom";
+    faceBottom.colors.push_back("orange");
+    faceBottom.colors.push_back("blue");
+    faceBottom.colors.push_back("orange");
+    faceBottom.colors.push_back("blue");
+    RubikCube.addFace(faceBottom);
+
+    Face faceLeft;
+    faceLeft.name = "Left";
+    faceLeft.colors.push_back("white");
+    faceLeft.colors.push_back("white");
+    faceLeft.colors.push_back("white");
+    faceLeft.colors.push_back("white");
+    RubikCube.addFace(faceLeft);
+
+    Face faceRight;
+    faceRight.name = "Right";
+    faceRight.colors.push_back("yellow");
+    faceRight.colors.push_back("yellow");
+    faceRight.colors.push_back("yellow");
+    faceRight.colors.push_back("yellow");
+    RubikCube.addFace(faceRight);
+
+    Face faceFront;
+    faceFront.name = "Front";
+    faceFront.colors.push_back("green");
+    faceFront.colors.push_back("orange");
+    faceFront.colors.push_back("green");
+    faceFront.colors.push_back("orange");
+    RubikCube.addFace(faceFront);
+
+    Face faceBehind;
+    faceBehind.name = "Behind";
+    faceBehind.colors.push_back("red");
+    faceBehind.colors.push_back("blue");
+    faceBehind.colors.push_back("red");
+    faceBehind.colors.push_back("blue");
+    RubikCube.addFace(faceBehind);
+
+}
+
+void example2()
+{
+    Face faceTop;
+    faceTop.name = "Top";
+    faceTop.colors.push_back("white");
+    faceTop.colors.push_back("green");
+    faceTop.colors.push_back("blue");
+    faceTop.colors.push_back("yellow");
+    RubikCube.addFace(faceTop);
+
+    Face faceBottom;
+    faceBottom.name = "Bottom";
+    faceBottom.colors.push_back("red");
+    faceBottom.colors.push_back("blue");
+    faceBottom.colors.push_back("white");
+    faceBottom.colors.push_back("yellow");
+    RubikCube.addFace(faceBottom);
+
+    Face faceLeft;
+    faceLeft.name = "Left";
+    faceLeft.colors.push_back("orange");
+    faceLeft.colors.push_back("red");
+    faceLeft.colors.push_back("green");
+    faceLeft.colors.push_back("yellow");
+    RubikCube.addFace(faceLeft);
+
+    Face faceRight;
+    faceRight.name = "Right";
+    faceRight.colors.push_back("orange");
+    faceRight.colors.push_back("white");
+    faceRight.colors.push_back("white");
+    faceRight.colors.push_back("blue");
+    RubikCube.addFace(faceRight);
+
+    Face faceFront;
+    faceFront.name = "Front";
+    faceFront.colors.push_back("yellow");
+    faceFront.colors.push_back("green");
+    faceFront.colors.push_back("green");
+    faceFront.colors.push_back("red");
+    RubikCube.addFace(faceFront);
+
+    Face faceBehind;
+    faceBehind.name = "Behind";
+    faceBehind.colors.push_back("orange");
+    faceBehind.colors.push_back("blue");
+    faceBehind.colors.push_back("orange");
+    faceBehind.colors.push_back("red");
+    RubikCube.addFace(faceBehind);
+
+}
 
 bool rubikCubiesRequest(manipulation_rubik::RubikCubies::Request &req, manipulation_rubik::RubikCubies::Response &res)
 {
@@ -249,6 +384,25 @@ bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_
     return true;
 }
 
+void createInputFile()
+{
+    auto numberOfCubies = RubikCube.cubies.size();
+    ofstream myfile("src/manipulation_rubik/doc/logic/input.lp");
+
+    if(myfile.is_open())
+    {
+        for(int i = 0; i < numberOfCubies; i++)
+        {
+            auto str = "is(0,"+ std::to_string(i) +","+ RubikCube.cubies[i].xColor + ","+  RubikCube.cubies[i].yColor + "," + RubikCube.cubies[i].zColor +").";   
+            myfile << str << endl;
+        }
+        myfile.close();
+    }
+    else cerr<<"Unable to open file";
+
+   
+}
+
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
 {
     char solutionFileName[] = "solution.txt";
@@ -259,8 +413,9 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     //char char_array[n];
     //strcpy(char_array, command.c_str());
     //system(char_array);
-
-    system("clingo src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
+    remove(solutionFileName);
+    createInputFile();
+    system("clingo src/manipulation_rubik/doc/logic/input.lp src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
    
     // regex expression for pattern to be searched 
     regex moveRegex ("move\\(\\d+,\\w+,\\d,-?\\d\\)"); 
@@ -359,7 +514,6 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     }
     else cout << "Unable to open file"; 
 
-    remove(solutionFileName);
     for(int i = 0; i < res.numberOfMoves; i++)
     {
       cout << "Move " << i + 1 << ": " << res.result[i]; 
@@ -407,6 +561,9 @@ int main(int argc, char** argv)
   
   ros::AsyncSpinner spinner(2);
   spinner.start();
+
+  RubikCube.initialize(2);
+  example1();
 
   ros::waitForShutdown();
   return 0;

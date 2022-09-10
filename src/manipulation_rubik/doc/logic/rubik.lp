@@ -171,14 +171,15 @@ init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
 % is(0,7,red,white,green).
 
 %% INPUT 3 %%
-is(0,0,orange,yellow,green).
-is(0,1,white,green,orange).
-is(0,2,orange,white,blue).
-is(0,3,red,blue,yellow).
-is(0,4,white,blue,red).
-is(0,5,blue,yellow,orange).
-is(0,6,green,white,red).
-is(0,7,yellow,red,green).
+% is(0,0,orange,yellow,green).
+% is(0,1,white,green,orange).
+% is(0,2,orange,white,blue).
+% is(0,3,red,blue,yellow).
+% is(0,4,white,blue,red).
+% is(0,5,blue,yellow,orange).
+% is(0,6,green,white,red).
+% is(0,7,yellow,red,green).
 
 #show move/4.
 #show solved/1.
+
