@@ -43,11 +43,27 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "eyes");
   ros::NodeHandle nh;
- //cv::Mat image;
-   //cv::VideoCapture capture(0);//les video
-   // if(!capture.isOpened()){
-     //   cout << "could not read file" << endl;
-     // return -1;
-    //}   
+  cv::Mat image;
+  cv::VideoCapture capture(1);//les video
+  if(!capture.isOpened()){
+    cout << "could not read file" << endl;
+    return -1;
+  }   
+
+  //capture.set(cv::CAP_PROP_FRAME_WIDTH , 1600);
+  //capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1200);
+  cv::Mat mat;
+
+  // wait for some external event here so I know it is time to take a picture...
+ for(;;)
+  {
+      capture >> mat;
+      cout << "capture frame" << endl;
+      //sleep(10);
+      
+    cv::imshow("Display window", mat);
+    cv::waitKey(2000);
+
+  }
 
 }
