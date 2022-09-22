@@ -27,6 +27,7 @@ find_package(catkin REQUIRED
 )
 
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV)
 find_package(Boost REQUIRED system filesystem date_time thread)
 #find_package(Franka REQUIRED)
 
@@ -85,7 +86,7 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
+include_directories(${THIS_PACKAGE_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 add_subdirectory(doc/rubik_right)
 add_subdirectory(doc/brain)

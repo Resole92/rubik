@@ -16,6 +16,7 @@ time(0..t).
 
 %% le rotazioni sono codificate secondo la terminologia degli angoli di eulero
 rotation(yaw;pitch;roll).
+
 side(0;1).
 dir(1;-1).
 
@@ -53,30 +54,44 @@ reach(roll,1,5,1). % roll back
 
 %% Solo una mossa per instante t, fino a quando non è risolto il cubo.
 1 { move(T1,R,S,D) : rotation(R), side(S), dir(D) } 1 :- 
-    time(T1), time(T2), not solved(T2), T2 <= T1.
-:- time(T1), time(T2), solved(T2), T2 < T1, move(T1,R,S,D).
+    time(T1), time(T2), not solved(T2), T1 >= T2.
+%1 { move(T,R,S,D) : rotation(R), side(S), dir(D) } 1 :- 
+%    time(T), not solved(T).
+%:- solved(T1), solved(T2), T1 > T2, move(T1,R,S,D), rotation(R), side(S), dir(D), time(T1;T2).
+%:- time(T1;T2), solved(T2), T2 < T1, move(T1,R,S,D).
+%:- move(T,R,S,D), rotation(R), side(S), dir(D), solved(T), R != none.
+%:- move(T,R,S,D), solved(T), time(T), rotation(R), side(S), dir(D), R != none.
+%move(T,none,0,0) :- solved(T), time(T).
+
+%:- move(T,R,S,D), rotation(R), side(S), dir(D), not solved(T), not solved(T+1), time(T), R == none.
+%% Vieta la rotazione di due facce nello stesso senso 
+:-  move(T,R,1,D), move(T+1,R,0,D),
+    rotation(R), dir(D), time(T), time(T+1), not solved(T), not solved(T+1).
+:-  move(T,R,0,D), move(T+1,R,1,D),
+    rotation(R), dir(D), time(T), time(T+1), not solved(T), not solved(T+1).
 
 %% Vieta 3 rotazioni uguali nello stesso senso.
 :- move(T,R,S,D), move(T+1,R,S,D), move(T+2,R,S,D),
-   rotation(R), side(S), dir(D), time(T), time(T+1), time(T+2).
+   rotation(R), side(S), dir(D), time(T), time(T+1), time(T+2), not solved(T), not solved(T+1), not solved(T+2).
 
 %% Vieta la rotazione di 180 gradi con mosse negative.
 :- move(T,R,S,-1), move(T+1,R,S,-1),
-   rotation(R), side(S),  time(T), time(T+1).
+   rotation(R), side(S),  time(T), time(T+1), not solved(T), not solved(T+1).
+
 
 %% Elimina sequenze di mosse che formano dei cicli nella sequenza di stati
 %% (sembra piuttosto pesante come controllo)
-:- equal(T1,T2), time(T1;T2), T1 < T2.
+:- equal(T1,T2), time(T1;T2), T1 < T2, not solved(T1).
 equal(T1,T2) :- not different(T1,T2), time(T1), time(T2), T1 < T2.
 different(T1,T2) :- cubie(X), is(T1,X,Col1,_,_),is(T2,X,Col2,_,_), time(T1), time(T2), color(Col1;Col2), Col1 != Col2, T1 < T2.
 different(T1,T2) :- cubie(X), is(T1,X,_,Col1,_),is(T2,X,_,Col2,_), time(T1), time(T2), color(Col1;Col2), Col1 != Col2, T1 < T2.
 different(T1,T2) :- cubie(X), is(T1,X,_,_,Col1),is(T2,X,_,_,Col2), time(T1), time(T2), color(Col1;Col2), Col1 != Col2, T1 < T2.
 
 %% In alternativa si può usare un più semplice controllo che vieta una seguenza di due mosse, l'una opposta all'altra.
-% :- move(T,R,S,D), move(T1,R,S,D1),
-%    T1 = T + 1, time(T;T1),
-%    dir(D;D1), D = -D1,
-%    rotation(R),side(S).
+:- move(T,R,S,D), move(T1,R,S,D1),
+    T1 = T + 1, time(T;T1),
+    dir(D;D1), D = -D1,
+    rotation(R),side(S).
 
 %% Evoluzione dello stato.
 is(T+1,C1,Col3,Col2,Col1) :- is(T,C,Col1,Col2,Col3),%
@@ -126,6 +141,8 @@ is(T+1,C,Col1,Col2,Col3) :- is(T,C,Col1,Col2,Col3),%
                            cubie(C), color(Col1), color(Col2), color(Col3),
                            rotation(R),side(S).
 
+
+
 %% configurazione risolta del cubo
 solved(N) :- is(N,0,Col4,Col1,Col3), is(N,1,Col4,Col1,Col5), is(N,2,Col6,Col1,Col5), is(N,3,Col6,Col1,Col3),
              is(N,4,Col4,Col2,Col3), is(N,5,Col4,Col2,Col5), is(N,6,Col6,Col2,Col5), is(N,7,Col6,Col2,Col3),
@@ -144,12 +161,17 @@ faces(Col3,Col5,Col4,Col1,Col6,Col2) :- faces(Col1,Col2,Col3,Col4,Col5,Col6).
 solved :- solved(_).
 :- not solved.
 
+%noneSum(F) :- F = #count {move(T,R,S,D):move(T,R,S,D), time(T), side(S), dir(D), rotation(R), R == none}.
+solvedTimes(F) :- F = #count {solved(T): solved(T)}.
 %% Predicato per distinguere la configurazione iniziale.
-init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
+%init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
 
 %% Minimizzazione ripetto al numero di mosse.
-#minimize { T@1,solved : solved(T), time(T)}.
-
+%#maximize {F: noneSum(F)}.
+#maximize {F: solvedTimes(F) }.
+%#minimize { T@1,solved : solved(T), time(T)}.
+%#minimize {N: solved(N)}.
+%#minimize { solved @1 }.
 %% INPUT 1 %%
 % is(0,0,red,white,green).
 % is(0,1,white,green,orange).
@@ -182,4 +204,6 @@ init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
 
 #show move/4.
 #show solved/1.
+%#show noneSum/1.
+#show solvedTimes/1.
 

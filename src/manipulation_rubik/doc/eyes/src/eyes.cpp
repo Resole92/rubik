@@ -33,10 +33,21 @@
 #include <tf2_ros/transform_listener.h>
 
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "eyes");
   ros::NodeHandle nh;
+ //cv::Mat image;
+   //cv::VideoCapture capture(0);//les video
+   // if(!capture.isOpened()){
+     //   cout << "could not read file" << endl;
+     // return -1;
+    //}   
 
 }

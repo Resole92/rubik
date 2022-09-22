@@ -405,6 +405,7 @@ void createInputFile()
 
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
 {
+    /*
     char solutionFileName[] = "solution.txt";
 
     //char commandClingo[] = "clingo src/manipulation_rubik/doc/logic/rubik.lp >> ";
@@ -413,8 +414,8 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     //char char_array[n];
     //strcpy(char_array, command.c_str());
     //system(char_array);
-    remove(solutionFileName);
-    createInputFile();
+    //remove(solutionFileName);
+    //createInputFile();
     system("clingo src/manipulation_rubik/doc/logic/input.lp src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
    
     // regex expression for pattern to be searched 
@@ -518,33 +519,33 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     {
       cout << "Move " << i + 1 << ": " << res.result[i]; 
     }
-
-    /*
+    */
+    
     manipulation_rubik::MoveConfiguration move1;
     move1.IsClockWise = true;
     move1.Move = "Bottom";
-    //res.result.push_back(move1);
+    res.result.push_back(move1);
 
     manipulation_rubik::MoveConfiguration move2;
     move2.IsClockWise = false;
     move2.Move = "Front";
-    //res.result.push_back(move2);
+    res.result.push_back(move2);
 
     manipulation_rubik::MoveConfiguration move3;
     move3.IsClockWise = false;
     move3.Move = "Front";
-    //res.result.push_back(move3);
+    res.result.push_back(move3);
 
     manipulation_rubik::MoveConfiguration move4;
     move4.IsClockWise = false;
     move4.Move = "Behind";
-    //res.result.push_back(move4);
+    res.result.push_back(move4);
 
     manipulation_rubik::MoveConfiguration move5;
     move5.IsClockWise = true;
     move5.Move = "Right";
-    //res.result.push_back(move5);
-    */
+    res.result.push_back(move5);
+    res.numberOfMoves = 5;
 
     return true;
 }
