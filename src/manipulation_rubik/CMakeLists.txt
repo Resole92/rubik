@@ -53,6 +53,7 @@ add_service_files(
   RotateCube.srv
   RubikFace.srv
   RubikCubies.srv
+  RubikFaceDetect.srv
 )
 
 

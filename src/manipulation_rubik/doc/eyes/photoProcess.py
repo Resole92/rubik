@@ -233,8 +233,8 @@ def colored_position(rectangles, colored_rectangles):
 #for n in range(7,8):
 for n in range(0,9):
   print("processing photo number " + str(n))
-  path = "photos/rubik_face_" + str(n+1) + ".jpg"
-  finalImage = "photos_processed/rubik_face_process_" + str(n+1) + ".jpg"
+  path = "src/manipulation_rubik/doc/eyes/photos/rubik_face_" + str(n+1) + ".jpg"
+  finalImage = "src/manipulation_rubik/doc/eyes/photos_processed/rubik_face_process_" + str(n+1) + ".jpg"
   rectangles = get_all_position(path)
   ordered_rectangles = order_rectangle(rectangles, path)
   colored_rectagles = check_image_color(path)
