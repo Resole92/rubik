@@ -43,9 +43,23 @@ using namespace std;
 
 bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipulation_rubik::RubikFaceDetect::Response &res)
 {
-  //system("python src/manipulation_rubik/doc/eyes/photoProcess.py");
-  
-  auto str = "blue,red,green,blue,blue,green,red,white,yellow";
+  string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
+  string processPath = "src/manipulation_rubik/doc/eyes/capture/test.jpg";
+  string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
+  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + req.face ).c_str());
+
+
+  string resultPath = processFolder + "/" + req.face + ".txt";
+  string line;
+  string str;
+  ifstream myfile (resultPath);
+  if (myfile.is_open())
+  {
+    while ( getline (myfile,line) )
+    {
+      str = line;
+    }
+  }
 
   stringstream ss( str );
   vector<string> result;
@@ -60,33 +74,39 @@ bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipu
   return true;
 }
 
+
+bool capturePhotoRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  cv::VideoCapture capture(0);
+  if(!capture.isOpened()){
+    cout << "could not read file" << endl;
+    return -1;
+  }  
+
+  cv::Mat mat;
+  capture >> mat;
+  cout << "capture frame" << endl;
+  if(mat.empty())
+  {
+    std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
+  }
+  cv::imwrite("src/manipulation_rubik/doc/eyes/capture/test.jpg", mat);
+  
+  //cv::imshow("Display window", mat);
+  //cv::waitKey(25);
+
+  return true;
+
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "eyes");
   ros::NodeHandle nh;
-  //cv::Mat image;
-  //cv::VideoCapture capture(0);//les video
-  //if(!capture.isOpened()){
-    //cout << "could not read file" << endl;
-   // return -1;
-  //}   
-
-  //capture.set(cv::CAP_PROP_FRAME_WIDTH , 1600);
-  //capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1200);
-  //cv::Mat mat;
-  //system("python src/manipulation_rubik/doc/eyes/photoProcess.py");
+ 
   auto service1 = nh.advertiseService("detect_face", detectFaceRequest);
-  //wait for some external event here so I know it is time to take a picture...
-  //for(;;)
-  //{
-  //    capture >> mat;
-  //    cout << "capture frame" << endl;
-      //sleep(10);
-    
-   // cv::imshow("Display window", mat);
-   // cv::waitKey(2000);
-
-  //}
+  auto service2 = nh.advertiseService("capture_photo", capturePhotoRequest);
+ 
 
   ros::AsyncSpinner spinner(2);
   spinner.start();

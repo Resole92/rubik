@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 import math
 import statistics
+import sys
+import os
 from cv2 import *
 #from google.colab.patches import cv2_imshow
 
@@ -224,23 +226,36 @@ def colored_position(rectangles, colored_rectangles):
       center_ycol = y_col + h_col/2
       if x_pos < center_xcol < x_pos + w_col and y_pos < center_ycol < y_pos + h_pos:
         color_found = True
-        colored_and_positioned.append((colored_rectangle[0], colored_rectangle[1] +  " " + rectangle[1]))
+        colored_and_positioned.append((colored_rectangle[0], colored_rectangle[1] , rectangle[1]))
         break
     if not color_found:
-      colored_and_positioned.append((rectangle[0], "white " + rectangle[1]))
+      colored_and_positioned.append((rectangle[0], "white", rectangle[1]))
   return colored_and_positioned
 
-#for n in range(7,8):
-for n in range(0,9):
-  print("processing photo number " + str(n))
-  path = "src/manipulation_rubik/doc/eyes/photos/rubik_face_" + str(n+1) + ".jpg"
-  finalImage = "src/manipulation_rubik/doc/eyes/photos_processed/rubik_face_process_" + str(n+1) + ".jpg"
-  rectangles = get_all_position(path)
-  ordered_rectangles = order_rectangle(rectangles, path)
-  colored_rectagles = check_image_color(path)
-  colored_and_positioned = colored_position(ordered_rectangles,colored_rectagles)
 
-  image = cv2.imread(path)
-  print_contours(colored_and_positioned, image)
-  cv2.imwrite(finalImage, image)
-  #cv2_imshow(image)
+
+#for n in range(7,8):
+path = sys.argv[1]
+processFolder = sys.argv[2]
+face = sys.argv[3]
+#for n in range(0,9):
+fileName = os.path.basename(path)
+finalImage = "src/manipulation_rubik/doc/eyes/photos_processed/"+ fileName
+rectangles = get_all_position(path)
+ordered_rectangles = order_rectangle(rectangles, path)
+colored_rectagles = check_image_color(path)
+colored_and_positioned = colored_position(ordered_rectangles,colored_rectagles)
+
+image = cv2.imread(path)
+print_contours(colored_and_positioned, image)
+cv2.imwrite(finalImage, image)
+
+result = ""
+
+for data in colored_and_positioned:
+  result +=data[1] + ","
+
+result = result[:-1]
+
+with open(processFolder + "/" +  face + ".txt", "w") as text_file:
+    text_file.write(result)

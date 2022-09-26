@@ -1,0 +1,1 @@
+green,red,white,red,orange,blue,red,red,red
