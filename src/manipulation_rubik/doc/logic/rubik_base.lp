@@ -5,7 +5,7 @@
 %% numero di cubies
 #const c = e**3.
 %% upperbound mosse
-#const t = 2.
+#const t = 7.
 
 %% posizione dei cubetti
 cubie(0..c-1).
@@ -15,7 +15,7 @@ color(red;blue;green;yellow;orange;white).
 time(0..t).
 
 %% le rotazioni sono codificate secondo la terminologia degli angoli di eulero
-rotation(yaw;pitch;roll;none).
+rotation(yaw;pitch;roll).
 side(0;1).
 dir(1;-1).
 
@@ -54,7 +54,7 @@ reach(roll,1,5,1). % roll back
 %% Solo una mossa per instante t, fino a quando non è risolto il cubo.
 1 { move(T1,R,S,D) : rotation(R), side(S), dir(D) } 1 :- 
     time(T1), time(T2), not solved(T2), T2 <= T1.
-%:- time(T1), time(T2), solved(T2), T2 < T1, move(T1,R,S,D).
+:- time(T1), time(T2), solved(T2), T2 < T1, move(T1,R,S,D).
 
 %% Vieta 3 rotazioni uguali nello stesso senso.
 :- move(T,R,S,D), move(T+1,R,S,D), move(T+2,R,S,D),

@@ -11,6 +11,8 @@
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/RotateCube.h>
+#include <manipulation_rubik/Rotate.h>
+#include <manipulation_rubik/PrepareForRotation.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -200,9 +202,9 @@ void closedGripperManually(int pandaIdentifier, bool isMainteined = false, std::
   }
 }
 
-double getRotationEndEffector(int pandaIdentifier)
-{
 
+bool canMoveClockWise(int pandaIdentifier)
+{
   auto pandaArmName = "panda_"+ std::to_string(pandaIdentifier) +"_arm";
 
   moveit::planning_interface::MoveGroupInterface group(pandaArmName);
@@ -217,18 +219,24 @@ double getRotationEndEffector(int pandaIdentifier)
   std::vector<double> joint_group_positions;
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
 
-  ROS_INFO("Position joint is: %f", joint_group_positions[6]  );
+  if(joint_group_positions[6] > 0){
+    return false;
+  }
+    
+  return true;
+}
+
+double getRotationEndEffector(int pandaIdentifier)
+{
+  auto canClockWise = canMoveClockWise(pandaIdentifier);
 
   auto rotation = M_PI /2;
-  // Now, let's modify one of the joints, plan to the new joint space goal and visualize the plan.
-  if(joint_group_positions[6] > 0){
-    ROS_INFO("Inverse rotation" );
+  if(!canClockWise)
+  {
     return rotation;
-    
   }
-  ROS_INFO("Normal rotation" );
+    
   return -rotation;
- 
 }
 
 void print_actual_cartesian_position(moveit::planning_interface::MoveGroupInterface& move_group)
@@ -1084,6 +1092,32 @@ void beginARotation(int pandaIdentifier, bool isClockWise, std::string objectNam
 
 }
 
+void prepareForRotationRequest(int pandaIdentifier, bool isClockwise, std::string objectName = rubikName)
+{
+  auto rotation = M_PI /2;
+  auto canClockWise = canMoveClockWise(pandaIdentifier);
+  if(isClockwise && !canClockWise)
+  {
+     rotateEndEffector(pandaIdentifier, -rotation); 
+  }
+  else if(isClockwise && canClockWise)
+  {
+    rotateEndEffector(pandaIdentifier, rotation);  
+  }
+  else if(!isClockwise && canClockWise)
+  {
+    rotateEndEffector(pandaIdentifier, rotation); 
+  }
+  else
+  {
+     rotateEndEffector(pandaIdentifier, -rotation); 
+  }
+
+  keepObject(pandaIdentifier,objectName);
+
+}
+
+
 bool doRotationLeftRequest(manipulation_rubik::RotateCube::Request &req, manipulation_rubik::RotateCube::Response &res)
 {
   ROS_INFO("Do Rotation Left");
@@ -1095,6 +1129,48 @@ bool doRotationRightRequest(manipulation_rubik::RotateCube::Request &req, manipu
 {
   ROS_INFO("Do Rotation Right");
   beginARotation(1, req.isClockWise);
+  return true;
+}
+
+bool prepareForRotationRightRequest(manipulation_rubik::PrepareForRotation::Request &req, manipulation_rubik::PrepareForRotation::Response &res)
+{
+  ROS_INFO("Prepare for rotation Right");
+  prepareForRotationRequest(1, req.isClockWise);
+  return true;
+}
+
+bool prepareForRotationLeftRequest(manipulation_rubik::PrepareForRotation::Request &req, manipulation_rubik::PrepareForRotation::Response &res)
+{
+  ROS_INFO("Prepare for rotation Left");
+  prepareForRotationRequest(2, req.isClockWise);
+  return true;
+}
+
+bool rotateRightRequest(manipulation_rubik::Rotate::Request &req, manipulation_rubik::Rotate::Response &res)
+{
+  ROS_INFO("Do Rotate Right");
+  //beginARotation(1, req.isClockWise);
+  return true;
+}
+
+bool rotateLeftRequest(manipulation_rubik::Rotate::Request &req, manipulation_rubik::Rotate::Response &res)
+{
+  ROS_INFO("Do Rotate Left");
+  //beginARotation(1, req.isClockWise);
+  return true;
+}
+
+bool leaveRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Leave Right");
+  leaveObjectAndRetreat(1); 
+  return true;
+}
+
+bool leaveLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+{
+  ROS_INFO("Leave Left");
+  leaveObjectAndRetreat(2); 
   return true;
 }
 
@@ -1132,6 +1208,14 @@ int main(int argc, char** argv)
 
   auto service20 = nh.advertiseService("place_right", placeRightRequest);
   auto service21 = nh.advertiseService("place_left", placeLeftRequest);
+
+  auto service22 = nh.advertiseService("prepare_for_rotation_right", prepareForRotationRightRequest);
+  auto service23 = nh.advertiseService("prepare_for_rotation_left", prepareForRotationLeftRequest);
+  auto service24 = nh.advertiseService("rotate_right", rotateRightRequest);
+  auto service25 = nh.advertiseService("rotate_left", rotateLeftRequest);
+
+  auto service26 = nh.advertiseService("leave_right", leaveRightRequest);
+  auto service27 = nh.advertiseService("leave_left", leaveLeftRequest);
   
 
 
