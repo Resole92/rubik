@@ -1,3 +1,4 @@
 bool isClockWise
+bool isToAttach
 ---
 std_msgs/String result

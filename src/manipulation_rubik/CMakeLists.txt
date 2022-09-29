@@ -56,6 +56,7 @@ add_service_files(
   RubikFaceDetect.srv
   PrepareForRotation.srv
   Rotate.srv
+  LeaveObject.srv
 )
 
 

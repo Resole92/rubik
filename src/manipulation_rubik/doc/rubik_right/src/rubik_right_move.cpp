@@ -13,7 +13,9 @@
 #include <manipulation_rubik/RotateCube.h>
 #include <manipulation_rubik/Rotate.h>
 #include <manipulation_rubik/PrepareForRotation.h>
+#include <manipulation_rubik/LeaveObject.h>
 #include "std_msgs/String.h"
+
 
 // MoveIt
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -125,6 +127,19 @@ bool changeCheckContactWithObject(std::string objectName, bool disable, int pand
   acm.setEntry("panda_2_rightfinger", objectName, disable);
   acm.setEntry("panda_2_hand", objectName, disable); 
 
+  //acm.setEntry("panda_"+ std::to_string(pandaIdentifier) + "_leftfinger", objectName, disable);
+  //acm.setEntry("panda_"+ std::to_string(pandaIdentifier) + "_rightfinger", objectName, disable);
+  //acm.setEntry("panda_"+ std::to_string(pandaIdentifier) + "_hand", objectName, disable);
+
+  if(disable)
+  {
+     std::cout << "Disable contact of panda arm "+ std::to_string(pandaIdentifier);
+  }
+  else
+  {
+    std::cout << "Enable contact of panda arm "+ std::to_string(pandaIdentifier);
+  }
+ 
 
 
   acm.setEntry("panda_1_leftfinger", "panda_2_leftfinger", disable);
@@ -197,6 +212,7 @@ void closedGripperManually(int pandaIdentifier, bool isMainteined = false, std::
   auto success = moveToJointPosition(group, joint_position);
   if(!isMainteined)
   {
+    
     ROS_INFO("Attach object");
     group.attachObject(objectToDetach);
   }
@@ -916,9 +932,9 @@ bool leaveMantainLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manip
   return true;
 }
 
-void leaveObjectAndRetreat(int pandaIdentifier, std::string objectName = rubikName)
+void leaveObjectAndRetreat(int pandaIdentifier, bool isToDetach, std::string objectName = rubikName)
 {
-  openGripperManually(pandaIdentifier, true);
+  openGripperManually(pandaIdentifier, isToDetach);
 
   if(pandaIdentifier == 1 && robotPositionSet1 == Right)
   {
@@ -1056,7 +1072,7 @@ void antiClockWiseRotation(int pandaIdentifier, double rotation, std::string obj
 {
   keepObject(pandaIdentifier,objectName);
   rotateEndEffector(pandaIdentifier, -rotation);
-  leaveObjectAndRetreat(pandaIdentifier, rubikName); 
+  leaveObjectAndRetreat(pandaIdentifier, true, rubikName); 
   rotateEndEffector(pandaIdentifier, rotation); 
 }
 
@@ -1065,7 +1081,7 @@ void clockWiseRotation(int pandaIdentifier, double rotation, std::string objectN
   rotateEndEffector(pandaIdentifier, -rotation); 
   keepObject(pandaIdentifier,objectName);
   rotateEndEffector(pandaIdentifier, rotation);
-  leaveObjectAndRetreat(pandaIdentifier, rubikName); 
+  leaveObjectAndRetreat(pandaIdentifier, true, rubikName); 
 }
 
 void beginARotation(int pandaIdentifier, bool isClockWise, std::string objectName = rubikName)
@@ -1118,6 +1134,31 @@ void prepareForRotationRequest(int pandaIdentifier, bool isClockwise, std::strin
 }
 
 
+void rotateRequest(int pandaIdentifier, bool isClockwise, bool isToAttach, std::string objectToAttach = rubikName)
+{
+  if(isToAttach)
+  {
+    auto groupName = "panda_" + std::to_string(pandaIdentifier) + "_effector";
+    moveit::planning_interface::MoveGroupInterface group(groupName); 
+    ROS_INFO("Attach object");
+    group.attachObject(objectToAttach);
+  }
+
+  changeCheckContactWithObject(rubikName, true, pandaIdentifier);
+  auto rotation = M_PI /2;
+  if(isClockwise)
+  {
+     rotateEndEffector(pandaIdentifier, rotation); 
+  }
+  else
+  {
+     rotateEndEffector(pandaIdentifier, -rotation); 
+  }
+
+  changeCheckContactWithObject(rubikName, false, pandaIdentifier);
+}
+
+
 bool doRotationLeftRequest(manipulation_rubik::RotateCube::Request &req, manipulation_rubik::RotateCube::Response &res)
 {
   ROS_INFO("Do Rotation Left");
@@ -1149,28 +1190,28 @@ bool prepareForRotationLeftRequest(manipulation_rubik::PrepareForRotation::Reque
 bool rotateRightRequest(manipulation_rubik::Rotate::Request &req, manipulation_rubik::Rotate::Response &res)
 {
   ROS_INFO("Do Rotate Right");
-  //beginARotation(1, req.isClockWise);
+  rotateRequest(1, req.isClockWise, req.isToAttach);
   return true;
 }
 
 bool rotateLeftRequest(manipulation_rubik::Rotate::Request &req, manipulation_rubik::Rotate::Response &res)
 {
   ROS_INFO("Do Rotate Left");
-  //beginARotation(1, req.isClockWise);
+  rotateRequest(2, req.isClockWise, req.isToAttach);
   return true;
 }
 
-bool leaveRightRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+bool leaveRightRequest(manipulation_rubik::LeaveObject::Request &req, manipulation_rubik::LeaveObject::Response &res)
 {
   ROS_INFO("Leave Right");
-  leaveObjectAndRetreat(1); 
+  leaveObjectAndRetreat(1, req.isToDetach); 
   return true;
 }
 
-bool leaveLeftRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
+bool leaveLeftRequest(manipulation_rubik::LeaveObject::Request &req, manipulation_rubik::LeaveObject::Response &res)
 {
   ROS_INFO("Leave Left");
-  leaveObjectAndRetreat(2); 
+  leaveObjectAndRetreat(2, req.isToDetach); 
   return true;
 }
 
@@ -1211,6 +1252,7 @@ int main(int argc, char** argv)
 
   auto service22 = nh.advertiseService("prepare_for_rotation_right", prepareForRotationRightRequest);
   auto service23 = nh.advertiseService("prepare_for_rotation_left", prepareForRotationLeftRequest);
+  
   auto service24 = nh.advertiseService("rotate_right", rotateRightRequest);
   auto service25 = nh.advertiseService("rotate_left", rotateLeftRequest);
 

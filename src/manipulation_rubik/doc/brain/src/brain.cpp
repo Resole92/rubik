@@ -13,6 +13,9 @@
 #include <manipulation_rubik/ResolveConfiguration.h>
 #include <manipulation_rubik/MoveConfiguration.h>
 #include <manipulation_rubik/RotateCube.h>
+#include <manipulation_rubik/Rotate.h>
+#include <manipulation_rubik/PrepareForRotation.h>
+#include <manipulation_rubik/LeaveObject.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -70,6 +73,15 @@ ros::ServiceClient clientPlaceRight;
 ros::ServiceClient clientPlaceLeft;
 
 ros::ServiceClient clientResolveConfiguration;
+
+ros::ServiceClient clientPrepareForRotationRight;
+ros::ServiceClient clientPrepareForRotationLeft;
+
+ros::ServiceClient clientRotateRight;
+ros::ServiceClient clientRotateLeft;
+
+ros::ServiceClient clientLeaveRight;
+ros::ServiceClient clientLeaveLeft;
 
 
 
@@ -193,6 +205,50 @@ void startPositionLeft()
 {
   manipulation_rubik::LfMoveLeft srv;
   clientStartPositionLeft.call(srv);
+}
+
+void prepareForRotationRight(bool isClockWise)
+{
+  manipulation_rubik::PrepareForRotation srv;
+  srv.request.isClockWise = isClockWise;
+  clientPrepareForRotationRight.call(srv);
+}
+
+void prepareForRotationLeft(bool isClockWise)
+{
+  manipulation_rubik::PrepareForRotation srv;
+  srv.request.isClockWise = isClockWise;
+  clientPrepareForRotationLeft.call(srv);
+}
+
+void rotateRight(bool isClockWise, bool isToAttach)
+{
+  manipulation_rubik::Rotate srv;
+  srv.request.isClockWise = isClockWise;
+  srv.request.isToAttach = isToAttach;
+  clientRotateRight.call(srv);
+}
+
+void rotateLeft(bool isClockWise, bool isToAttach)
+{
+  manipulation_rubik::Rotate srv;
+  srv.request.isClockWise = isClockWise;
+  srv.request.isToAttach = isToAttach;
+  clientRotateLeft.call(srv);
+}
+
+void leaveRight()
+{
+  manipulation_rubik::LeaveObject srv;
+  srv.request.isToDetach = true;
+  clientLeaveRight.call(srv);
+}
+
+void leaveLeft()
+{
+  manipulation_rubik::LeaveObject srv;
+  srv.request.isToDetach = true;
+  clientLeaveLeft.call(srv);
 }
 
 void maintainFromTopRightToBehindRight()
@@ -364,6 +420,41 @@ void rotateFrontFace(bool isClockWise)
   LastMovement = Front;
 }
 
+void retrieveFaces()
+{
+  for(int i = 0; i < 2; i++)
+  {
+    prepareForRotationLeft(true);
+    leaveRight();
+    rotateLeft(false, true);
+
+    prepareForRotationRight(false);
+    leaveLeft();
+    rotateRight(true, true);
+  }
+
+  moveBottomPosition();
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+
+  prepareForRotationRight(false);
+  leaveLeft();
+  moveLeftPosition();
+  rotateRight(true, true);
+
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+
+  prepareForRotationRight(false);
+  leaveLeft();
+  rotateRight(true, true);
+
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -399,8 +490,20 @@ int main(int argc, char** argv)
   clientPlaceLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_left");
 
   clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
+
+  clientPrepareForRotationRight = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_right");
+  clientPrepareForRotationLeft = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_left");
+
+  clientRotateRight = nh.serviceClient<manipulation_rubik::Rotate>("rotate_right");
+  clientRotateLeft = nh.serviceClient<manipulation_rubik::Rotate>("rotate_left");
+
+  clientLeaveRight = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_right");
+  clientLeaveLeft = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_left");
+
+
   pickRight();
   moveLeftPosition();
+  retrieveFaces();
   maintainTopRight();
   MainteinedStatus = TopRight;
 

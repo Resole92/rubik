@@ -1,0 +1,3 @@
+bool isToDetach
+---
+std_msgs/String result
