@@ -424,36 +424,29 @@ void retrieveFaces()
 {
   for(int i = 0; i < 2; i++)
   {
-    prepareForRotationLeft(true);
-    leaveRight();
-    rotateLeft(false, true);
+    //prepareForRotationLeft(true);
+    //leaveRight();
+    //rotateLeft(false, true);
 
-    prepareForRotationRight(false);
-    leaveLeft();
-    rotateRight(true, true);
+    //prepareForRotationRight(false);
+    //leaveLeft();
+    //rotateRight(true, true);
   }
 
   moveBottomPosition();
-  prepareForRotationLeft(true);
-  leaveRight();
-  rotateLeft(false, true);
 
-  prepareForRotationRight(false);
-  leaveLeft();
+  for(int i = 0; i < 4; i++)
+  {
+    prepareForRotationLeft(true);
+    leaveRight();
+    rotateLeft(false, true);
+    prepareForRotationRight(false);
+    leaveLeft();
+  }
+
   moveLeftPosition();
-  rotateRight(true, true);
-
-  prepareForRotationLeft(true);
-  leaveRight();
-  rotateLeft(false, true);
-
-  prepareForRotationRight(false);
-  leaveLeft();
-  rotateRight(true, true);
 
 }
-
-
 
 
 int main(int argc, char** argv)

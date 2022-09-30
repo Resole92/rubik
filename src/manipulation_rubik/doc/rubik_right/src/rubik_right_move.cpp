@@ -349,12 +349,12 @@ bool moveToCartesianPath(int pandaIdentifier, double x, double y, double z)
   my_plan.trajectory_ = trajectory; 
 
   const int wait_time = 1;
-  ros::Duration(wait_time).sleep();
+  //ros::Duration(wait_time).sleep();
 
   group.execute(my_plan);
 
   changeCheckContactWithObject(rubikName, false, pandaIdentifier);
-  ros::Duration(wait_time).sleep();
+  //ros::Duration(wait_time).sleep();
 }
 
 bool moveToCartesianPath(int pandaIdentifier, geometry_msgs::Pose& pose)
@@ -386,13 +386,13 @@ bool moveToCartesianPath(int pandaIdentifier, geometry_msgs::Pose& pose)
   my_plan.trajectory_ = trajectory; 
 
   const int wait_time = 1;
-  ros::Duration(wait_time).sleep();
+  //ros::Duration(wait_time).sleep();
 
   group.execute(my_plan);
 
   changeCheckContactWithObject(rubikName, false, pandaIdentifier);
 
-  ros::Duration(wait_time).sleep();
+  //ros::Duration(wait_time).sleep();
 }
 
 void doTransformation(std::string from_frame, std::string to_frame, geometry_msgs::Pose& target_pose)
@@ -443,9 +443,9 @@ void rotateEndEffector(int pandaIdentifier, double rotation_radiants)
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
   //Fate il vostro piano
-  bool success = (group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  //bool success = (group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
 
-  if(success)
+  //if(success)
   {
     group.move();
 
