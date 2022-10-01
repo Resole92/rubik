@@ -5,7 +5,7 @@
 %% numero di cubies
 #const c = e**3.
 %% upperbound mosse
-#const t = 2.
+#const t = 3.
 
 %% posizione dei cubetti
 cubie(0..c-1).
@@ -15,7 +15,7 @@ color(red;blue;green;yellow;orange;white).
 time(0..t).
 
 %% le rotazioni sono codificate secondo la terminologia degli angoli di eulero
-rotation(yaw;pitch;roll;none).
+rotation(yaw;pitch;roll).
 side(0;1).
 dir(1;-1).
 
@@ -54,7 +54,7 @@ reach(roll,1,5,1). % roll back
 %% Solo una mossa per instante t, fino a quando non è risolto il cubo.
 1 { move(T1,R,S,D) : rotation(R), side(S), dir(D) } 1 :- 
     time(T1), time(T2), not solved(T2), T2 <= T1.
-%:- time(T1), time(T2), solved(T2), T2 < T1, move(T1,R,S,D).
+:- time(T1), time(T2), solved(T2), T2 < T1, move(T1,R,S,D).
 
 %% Vieta 3 rotazioni uguali nello stesso senso.
 :- move(T,R,S,D), move(T+1,R,S,D), move(T+2,R,S,D),
@@ -69,8 +69,8 @@ reach(roll,1,5,1). % roll back
    rotation(R), side(S1;S2), dir(D), time(T), time(T+1), S1 != S2.
 
 %%Vieta due rotazione in un senso e poi nel senso inverso dell'altro
-:- move(T,R,S1,D1), move(T+1,R,S1,D1), move(T+2,R,S2,D2), move(T+3,R,S2,D2),
-   rotation(R), side(S1;S2), dir(D1), dir(D2), time(T), time(T+1), time(T+2), time(T+3), D1 != D2, S1 != S2.
+%:- move(T,R,S1,D1), move(T+1,R,S1,D1), move(T+2,R,S2,D2), move(T+3,R,S2,D2),
+ %  rotation(R), side(S1;S2), dir(D1), dir(D2), time(T), time(T+1), time(T+2), time(T+3), D1 != D2, S1 != S2.
 
 %:- move(T,R,S1,D1), move(T+1,R,S2,D2), move(T+2,R,S2,D2), move(T+3,R,S1,D1),
   % rotation(R), side(S1;S2), dir(D1), dir(D2), time(T), time(T+1), time(T+2), time(T+3), D1 != D2, S1 != S2.
@@ -164,36 +164,6 @@ init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
 
 %% Minimizzazione ripetto al numero di mosse.
 #minimize { T@1,solved : solved(T), time(T)}.
-
-%% INPUT 1 %%
- %is(0,0,red,white,green).
- %is(0,1,white,green,orange).
- %is(0,2,orange,white,blue).
- %is(0,3,green,red,yellow).
- %is(0,4,blue,orange,yellow).
- %is(0,5,white,red,blue).
- %is(0,6,blue,yellow,red).
- %is(0,7,yellow,green,orange).
-
-%% INPUT 2 %%
-% is(0,0,yellow,green,orange).
-% is(0,1,blue,white,orange).
-% is(0,2,yellow,orange,blue).
-% is(0,3,blue,yellow,red).
-% is(0,4,green,orange,white).
-% is(0,5,red,blue,white).
-% is(0,6,green,red,yellow).
-% is(0,7,red,white,green).
-
-%% INPUT 3 %%
-is(0,0,orange,yellow,green).
-is(0,1,white,green,orange).
-is(0,2,orange,white,blue).
-is(0,3,red,blue,yellow).
-is(0,4,white,blue,red).
-is(0,5,blue,yellow,orange).
-is(0,6,green,white,red).
-is(0,7,yellow,red,green).
 
 #show move/4.
 #show solved/1.

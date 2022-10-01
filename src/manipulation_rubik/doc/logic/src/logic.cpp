@@ -405,7 +405,7 @@ void createInputFile()
 
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
 {
-    /*
+    
     char solutionFileName[] = "solution.txt";
 
     //char commandClingo[] = "clingo src/manipulation_rubik/doc/logic/rubik.lp >> ";
@@ -490,6 +490,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
             }
             else
             {
+                move.IsClockWise = !clockWise;
                 move.Move = "Left";
             }
         }
@@ -498,10 +499,12 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
         {
             if(face == "0")
             {
+                move.IsClockWise = !clockWise;
                 move.Move = "Front";
             }
             else
             {
+                 move.IsClockWise = !clockWise;
                 move.Move = "Behind";
             }
         }
@@ -519,8 +522,8 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     {
       cout << "Move " << i + 1 << ": " << res.result[i]; 
     }
-    */
     
+    /*
     manipulation_rubik::MoveConfiguration move1;
     move1.IsClockWise = true;
     move1.Move = "Bottom";
@@ -546,7 +549,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     move5.Move = "Right";
     res.result.push_back(move5);
     res.numberOfMoves = 5;
-
+    */
     return true;
 }
 

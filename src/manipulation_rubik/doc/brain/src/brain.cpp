@@ -566,7 +566,7 @@ int main(int argc, char** argv)
 
   pickRight();
   moveLeftPosition();
-  retrieveFaces();
+  //retrieveFaces();
   maintainTopRight();
   MainteinedStatus = TopRight;
 

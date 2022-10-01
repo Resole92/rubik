@@ -37,11 +37,22 @@
 %is(0,6,green,white,red).
 %is(0,7,yellow,red,green).
 
-is(0,white,orange,green).
-is(1,white,orange,blue).
-is(2,yellow,green,orange).
-is(3,yellow,green,red).
-is(4,white,red,green).
-is(5,white,red,blue).
-is(6,yellow,blue,orange).
-is(7,yellow,blue,red).
+%Primi tre movimenti
+%is(0,0,green,orange,yellow).
+%is(0,1,red,green,white).
+%is(0,2,orange,white,blue).
+%is(0,3,orange,white,green).
+%is(0,4,white,blue,red).
+%is(0,5,red,yellow,blue).
+%is(0,6,orange,yellow,blue).
+%is(0,7,yellow,red,green).
+
+%Secondi tre movimenti
+is(0,0,orange,yellow,green).
+is(0,1,orange,yellow,blue).
+is(0,2,red,white,green).
+is(0,3,yellow,red,blue).
+is(0,4,white,blue,red).
+is(0,5,green,white,orange).
+is(0,6,red,yellow,green).
+is(0,7,blue,orange,white).
