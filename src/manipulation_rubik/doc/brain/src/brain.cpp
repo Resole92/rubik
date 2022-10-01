@@ -16,6 +16,8 @@
 #include <manipulation_rubik/Rotate.h>
 #include <manipulation_rubik/PrepareForRotation.h>
 #include <manipulation_rubik/LeaveObject.h>
+#include <manipulation_rubik/RubikFaceDetect.h>
+#include <manipulation_rubik/RubikFace.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -83,7 +85,8 @@ ros::ServiceClient clientRotateLeft;
 ros::ServiceClient clientLeaveRight;
 ros::ServiceClient clientLeaveLeft;
 
-
+ros::ServiceClient clientDetectFace;
+ros::ServiceClient clientRubikFace;
 
 void moveLeftPosition()
 {
@@ -249,6 +252,24 @@ void leaveLeft()
   manipulation_rubik::LeaveObject srv;
   srv.request.isToDetach = true;
   clientLeaveLeft.call(srv);
+}
+
+std::vector<std::string> faceDetect(std::string face)
+{
+  manipulation_rubik::RubikFaceDetect srv;
+  srv.request.face = face;
+  clientDetectFace.call(srv);
+  return srv.response.colors;
+}
+
+void sendFaceData(std::vector<std::string> colors, std::string face, bool isNewCube)
+{
+  manipulation_rubik::RubikFace srv;
+  srv.request.dimension = 3;
+  srv.request.isNewCube = isNewCube;
+  srv.request.colors = colors;
+  srv.request.face = face;
+  clientRubikFace.call(srv);
 }
 
 void maintainFromTopRightToBehindRight()
@@ -422,27 +443,74 @@ void rotateFrontFace(bool isClockWise)
 
 void retrieveFaces()
 {
-  for(int i = 0; i < 2; i++)
-  {
-    //prepareForRotationLeft(true);
-    //leaveRight();
-    //rotateLeft(false, true);
+  
+  std::string actualFace = "Behind";
+  prepareForRotationLeft(true);
+  leaveRight();
+  auto colors = faceDetect(actualFace);
+  ROS_INFO("Detect behind face");
+  sendFaceData(colors, actualFace, true);
+  rotateLeft(false, true);
 
-    //prepareForRotationRight(false);
-    //leaveLeft();
-    //rotateRight(true, true);
-  }
+  actualFace = "Top";
+  prepareForRotationRight(false);
+  leaveLeft();
+  colors = faceDetect(actualFace);
+  ROS_INFO("Detect top face");
+  sendFaceData(colors, actualFace, false);
+  rotateRight(true, true);
+
+  actualFace = "Front";
+  prepareForRotationLeft(true);
+  leaveRight();
+  colors = faceDetect(actualFace);
+  ROS_INFO("Detect front face");
+  sendFaceData(colors, actualFace, false);
+  rotateLeft(false, true);
+
+  actualFace = "Bootom";
+  prepareForRotationRight(false);
+  leaveLeft();
+  colors = faceDetect(actualFace);
+  ROS_INFO("Detect bottom face");
+  sendFaceData(colors, actualFace, false);
+  rotateRight(true, true);
 
   moveBottomPosition();
 
-  for(int i = 0; i < 4; i++)
-  {
-    prepareForRotationLeft(true);
-    leaveRight();
-    rotateLeft(false, true);
-    prepareForRotationRight(false);
-    leaveLeft();
-  }
+  actualFace = "Left";
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+  colors = faceDetect(actualFace);
+  ROS_INFO("Detect left face");
+  sendFaceData(colors, actualFace, false);
+  prepareForRotationRight(false);
+  leaveLeft();
+
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+  ROS_INFO("Already detected");
+  prepareForRotationRight(false);
+  leaveLeft();
+
+  actualFace = "Right";
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+  colors = faceDetect(actualFace);
+  ROS_INFO("Detect right face");
+  sendFaceData(colors, actualFace, false);
+  prepareForRotationRight(false);
+  leaveLeft();
+
+  prepareForRotationLeft(true);
+  leaveRight();
+  rotateLeft(false, true);
+  ROS_INFO("Already detected");
+  prepareForRotationRight(false);
+  leaveLeft();
 
   moveLeftPosition();
 
@@ -493,6 +561,8 @@ int main(int argc, char** argv)
   clientLeaveRight = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_right");
   clientLeaveLeft = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_left");
 
+  clientDetectFace = nh.serviceClient<manipulation_rubik::RubikFaceDetect>("detect_face");
+  clientRubikFace = nh.serviceClient<manipulation_rubik::RubikFace>("rubik_face");
 
   pickRight();
   moveLeftPosition();

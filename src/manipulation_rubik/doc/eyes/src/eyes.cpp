@@ -11,7 +11,6 @@
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/RubikFaceDetect.h>
-//#include <manipulation_rubik/MoveLeft.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -43,8 +42,10 @@ using namespace std;
 
 bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipulation_rubik::RubikFaceDetect::Response &res)
 {
+
+
   string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
-  string processPath = "src/manipulation_rubik/doc/eyes/capture/test.jpg";
+  string processPath = "src/manipulation_rubik/doc/eyes/photos/rubik_face_1.jpg";
   string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
   system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + req.face ).c_str());
 

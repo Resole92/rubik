@@ -28,11 +28,20 @@
 %is(0,7,yellow,green,orange).
 
 %Input 3 
-is(0,0,orange,yellow,green).
-is(0,1,white,green,orange).
-is(0,2,orange,white,blue).
-is(0,3,red,blue,yellow).
-is(0,4,white,blue,red).
-is(0,5,blue,yellow,orange).
-is(0,6,green,white,red).
-is(0,7,yellow,red,green).
+%is(0,0,orange,yellow,green).
+%is(0,1,white,green,orange).
+%is(0,2,orange,white,blue).
+%is(0,3,red,blue,yellow).
+%is(0,4,white,blue,red).
+%is(0,5,blue,yellow,orange).
+%is(0,6,green,white,red).
+%is(0,7,yellow,red,green).
+
+is(0,white,orange,green).
+is(1,white,orange,blue).
+is(2,yellow,green,orange).
+is(3,yellow,green,red).
+is(4,white,red,green).
+is(5,white,red,blue).
+is(6,yellow,blue,orange).
+is(7,yellow,blue,red).

@@ -69,10 +69,10 @@ class Rubik
         {
             if(dimension == 2)
             {
-                cubies[2].yColor = targetFace.colors[0];
-                cubies[1].yColor = targetFace.colors[1];
-                cubies[3].yColor = targetFace.colors[2];
-                cubies[0].yColor = targetFace.colors[3];
+                cubies[0].yColor = targetFace.colors[0];
+                cubies[3].yColor = targetFace.colors[1];
+                cubies[2].yColor = targetFace.colors[2];
+                cubies[1].yColor = targetFace.colors[3];
             }
             
         }
@@ -80,10 +80,10 @@ class Rubik
         {
             if(dimension == 2)
             {
-                cubies[7].yColor = targetFace.colors[0];
-                cubies[4].yColor = targetFace.colors[1];
-                cubies[6].yColor = targetFace.colors[2];
-                cubies[5].yColor = targetFace.colors[3];
+                cubies[5].yColor = targetFace.colors[0];
+                cubies[6].yColor = targetFace.colors[1];
+                cubies[4].yColor = targetFace.colors[2];
+                cubies[7].yColor = targetFace.colors[3];
             }
         }
         if(targetFace.name == "Right")
@@ -110,10 +110,10 @@ class Rubik
         {
             if(dimension == 2)
             {
-                cubies[3].zColor = targetFace.colors[0];
-                cubies[0].zColor = targetFace.colors[1];
-                cubies[7].zColor = targetFace.colors[2];
-                cubies[4].zColor = targetFace.colors[3];
+                cubies[4].zColor = targetFace.colors[0];
+                cubies[7].zColor = targetFace.colors[1];
+                cubies[0].zColor = targetFace.colors[2];
+                cubies[3].zColor = targetFace.colors[3];
             }
         }
         if(targetFace.name == "Behind")
