@@ -468,7 +468,7 @@ void retrieveFaces()
   sendFaceData(colors, actualFace, false);
   rotateLeft(false, true);
 
-  actualFace = "Bootom";
+  actualFace = "Bottom";
   prepareForRotationRight(false);
   leaveLeft();
   colors = faceDetect(actualFace);
@@ -566,7 +566,7 @@ int main(int argc, char** argv)
 
   pickRight();
   moveLeftPosition();
-  //retrieveFaces();
+  retrieveFaces();
   maintainTopRight();
   MainteinedStatus = TopRight;
 
