@@ -91,6 +91,9 @@ def is_center_inside(r1,r2):
 def is_overlap(r1, r2):
   return not ((r1[0]>=r2[2]) or (r1[2]<=r2[0]) or (r1[3]<=r2[1]) or (r1[1]>=r2[3]))
 
+def is_bigger(r1, r2):
+  return (r1[2] - r1[0]) * (r1[3] - r1[1]) >  (r2[2] - r2[0]) * (r2[3] - r2[1])
+
 def is_contains(r2, r1):
   return r1[0] < r2[0] < r2[2] < r1[2] and r1[1] < r2[1] < r2[3] < r1[3]
 
@@ -99,27 +102,27 @@ def remove_all_overlap(detailed_contours):
 
   for idx_source, source_detailed_contours in enumerate(detailed_contours):
     is_overlaped = False
-    is_center_inside = False
+    is_center_insided = False
     source_contours = source_detailed_contours[0]
-    source_color = source_detailed_contours[1]
+    #source_color = source_detailed_contours[1]
     x_source,y_source,w_source,h_source = cv2.boundingRect(source_contours)
     for idx_target,target_detailed_contours in  enumerate(detailed_contours):
       target_contours = target_detailed_contours[0]
-      target_color = target_detailed_contours[1]
+      #target_color = target_detailed_contours[1]
       x_target,y_target,w_target,h_target = cv2.boundingRect(target_contours)
       source_data = [x_source, y_source, x_source + w_source, y_source + h_source]
       target_data = [x_target, y_target, x_target + w_target, y_target + h_target]
-      if is_center_inside(source_data, target_data):
-        is_center_inside = True
+      if is_center_inside(source_data, target_data) and not is_bigger(source_data, target_data) and idx_source != idx_target:
+        is_center_insided = True
         break
       #if is_contains(source_data, target_data) and idx_source != idx_target and (source_color == "blue" or target_color == "blue") :
       #  is_overlaped = True
       #  break
-      if is_overlap(source_data, target_data) and idx_source != idx_target : #and (source_color != "blue" and target_color != "blue") :
-          if w_target * h_target > w_source * h_source:
-            is_overlaped = True
-    if not is_overlaped and not is_center_inside:
-        no_overlaped_contours.append(source_detailed_contours)
+      #if is_overlap(source_data, target_data) and idx_source != idx_target : #and (source_color != "blue" and target_color != "blue") :
+      #    if w_target * h_target > w_source * h_source:
+      #      is_overlaped = True
+    if not is_center_insided: #and not is_overlaped:
+      no_overlaped_contours.append(source_detailed_contours)
   
   return no_overlaped_contours
 
@@ -167,10 +170,10 @@ def get_all_position(path):
       # obtain the bounding rectangle coordinates for each square
       x, y, w, h = cv2.boundingRect(c)
       #if(300 > w > 140 and 300 > h > 140): 
-      if(300 > w > 50 and 300 > h > 50): 
+      if(100 > w > 50 and 100 > h > 50): 
         # With the bounding rectangle coordinates we draw the green bounding boxes
         all_rectangle.append((c, str(index)))
-  return all_rectangle
+  #return all_rectangle
   clear_rectangle = remove_all_overlap(all_rectangle)
   #print_contours(clear_rectangle, copy)
   #cv2_imshow(copy)
