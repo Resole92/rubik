@@ -85,16 +85,31 @@ bool capturePhotoRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulat
   }  
 
   cv::Mat mat;
-  capture >> mat;
-  cout << "capture frame" << endl;
-  if(mat.empty())
+ 
+  auto frameToRead = 30;
+  auto actualFrameRead = 0;
+  while(actualFrameRead < frameToRead)
   {
-    std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
+    capture >> mat;
+    cout << "capture frame " << actualFrameRead << endl;
+    if(mat.empty())
+    {
+      std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
+    }
+    actualFrameRead++;
   }
-  cv::imwrite("src/manipulation_rubik/doc/eyes/capture/test.jpg", mat);
+
+  
+  string processPath = "src/manipulation_rubik/doc/eyes/photos/test.jpg";
+  cv::imwrite(processPath, mat);
+
+  string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
+  string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
+  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + "test" ).c_str());
+
   
   //cv::imshow("Display window", mat);
-  //cv::waitKey(25);
+  cv::waitKey(25);
 
   return true;
 
