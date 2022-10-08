@@ -39,18 +39,48 @@
 
 using namespace std;
 
+string captureFace(string faceName)
+{
+  cv::VideoCapture capture(0);
+  if(!capture.isOpened()){
+    cout << "could not read file" << endl;
+    return "";
+  }  
+
+  cv::Mat mat;
+ 
+  auto frameToRead = 30;
+  auto actualFrameRead = 0;
+  while(actualFrameRead < frameToRead)
+  {
+    capture >> mat;
+    cout << "capture frame " << actualFrameRead << endl;
+    if(mat.empty())
+    {
+      cerr << "Something is wrong with the webcam, could not get frame." << endl;
+    }
+    actualFrameRead++;
+   
+  }
+
+  
+  string processPath = "src/manipulation_rubik/doc/eyes/photos/"+ faceName +".jpg";
+  cv::imwrite(processPath, mat);
+  cv::waitKey(25);
+
+  string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
+  string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
+  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + faceName ).c_str());
+
+  string resultPath = processFolder + "/" + faceName + ".txt";
+  return resultPath;
+
+}
+
 
 bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipulation_rubik::RubikFaceDetect::Response &res)
 {
-
-
-  string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
-  string processPath = "src/manipulation_rubik/doc/eyes/photos/rubik_face_1.jpg";
-  string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
-  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + req.face ).c_str());
-
-
-  string resultPath = processFolder + "/" + req.face + ".txt";
+  string resultPath =  captureFace(req.face);
   string line;
   string str;
   ifstream myfile (resultPath);
@@ -78,39 +108,7 @@ bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipu
 
 bool capturePhotoRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulation_rubik::LfMoveLeft::Response &res)
 {
-  cv::VideoCapture capture(0);
-  if(!capture.isOpened()){
-    cout << "could not read file" << endl;
-    return -1;
-  }  
-
-  cv::Mat mat;
- 
-  auto frameToRead = 30;
-  auto actualFrameRead = 0;
-  while(actualFrameRead < frameToRead)
-  {
-    capture >> mat;
-    cout << "capture frame " << actualFrameRead << endl;
-    if(mat.empty())
-    {
-      std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
-    }
-    actualFrameRead++;
-  }
-
-  
-  string processPath = "src/manipulation_rubik/doc/eyes/photos/test.jpg";
-  cv::imwrite(processPath, mat);
-
-  string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
-  string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
-  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + "test" ).c_str());
-
-  
-  //cv::imshow("Display window", mat);
-  cv::waitKey(25);
-
+  captureFace("test"); 
   return true;
 
 }

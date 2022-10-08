@@ -57,6 +57,7 @@ add_service_files(
   PrepareForRotation.srv
   Rotate.srv
   LeaveObject.srv
+  CreateInput.srv
 )
 
 

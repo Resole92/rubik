@@ -14,6 +14,7 @@
 #include <manipulation_rubik/CubeDto.h>
 #include <manipulation_rubik/RubikCubies.h>
 #include <manipulation_rubik/MoveConfiguration.h>
+#include <manipulation_rubik/CreateInput.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -71,8 +72,8 @@ class Rubik
             {
                 cubies[0].yColor = targetFace.colors[0];
                 cubies[3].yColor = targetFace.colors[1];
-                cubies[2].yColor = targetFace.colors[2];
-                cubies[1].yColor = targetFace.colors[3];
+                cubies[1].yColor = targetFace.colors[2];
+                cubies[2].yColor = targetFace.colors[3];
             }
             
         }
@@ -378,6 +379,7 @@ bool rubikFaceRequest(manipulation_rubik::RubikFace::Request &req, manipulation_
         }
     }
 
+
     auto error = RubikCube.addFace(face);
     res.response = error;
 
@@ -401,6 +403,12 @@ void createInputFile()
     else cerr<<"Unable to open file";
 
    
+}
+
+bool createInputRequest(manipulation_rubik::CreateInput::Request &req, manipulation_rubik::CreateInput::Response &res)
+{
+    createInputFile();
+    return true;
 }
 
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
@@ -562,6 +570,7 @@ int main(int argc, char** argv)
   auto service1 = nh.advertiseService("resolve_configuration", resolveConfigurationRequest);
   auto service2 = nh.advertiseService("rubik_face", rubikFaceRequest);
   auto service3 = nh.advertiseService("rubik_cubies", rubikCubiesRequest);
+  auto service4 = nh.advertiseService("create_input", createInputRequest);
   
   ros::AsyncSpinner spinner(2);
   spinner.start();

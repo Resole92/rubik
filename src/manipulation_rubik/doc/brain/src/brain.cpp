@@ -259,17 +259,25 @@ std::vector<std::string> faceDetect(std::string face)
   manipulation_rubik::RubikFaceDetect srv;
   srv.request.face = face;
   clientDetectFace.call(srv);
+  std::string result = "";
+  for(int i=0; i < srv.response.colors.size(); i++)
+  {
+    result = result + srv.response.colors[i] + ",";
+  }
+
+  std::cout << result << std::endl;
   return srv.response.colors;
 }
 
 void sendFaceData(std::vector<std::string> colors, std::string face, bool isNewCube)
 {
   manipulation_rubik::RubikFace srv;
-  srv.request.dimension = 3;
+  srv.request.dimension = 2;
   srv.request.isNewCube = isNewCube;
   srv.request.colors = colors;
   srv.request.face = face;
   clientRubikFace.call(srv);
+  std::cout << srv.response.response << std::endl;
 }
 
 void maintainFromTopRightToBehindRight()
