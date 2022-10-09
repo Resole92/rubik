@@ -564,7 +564,13 @@ bool startProcessRequest(manipulation_rubik::StartProcess::Request &req, manipul
 {
   pickRight();
   moveLeftPosition();
-  retrieveFaces();
+  if(req.doFaceDetecting)
+  {
+    retrieveFaces();
+  }
+
+  if(!req.doMovement) return;
+  
   maintainTopRight();
   MainteinedStatus = TopRight;
 

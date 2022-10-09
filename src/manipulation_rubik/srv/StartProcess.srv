@@ -1,2 +1,4 @@
+bool doFaceDetecting
+bool doMovement
 ---
 string response
