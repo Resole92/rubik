@@ -393,6 +393,8 @@ void createInputFile()
 
     if(myfile.is_open())
     {
+        cout<<"create input file";
+
         for(int i = 0; i < numberOfCubies; i++)
         {
             auto str = "is(0,"+ std::to_string(i) +","+ RubikCube.cubies[i].xColor + ","+  RubikCube.cubies[i].yColor + "," + RubikCube.cubies[i].zColor +").";   
@@ -422,9 +424,9 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
     //char char_array[n];
     //strcpy(char_array, command.c_str());
     //system(char_array);
-    //remove(solutionFileName);
-    //createInputFile();
-    system("clingo src/manipulation_rubik/doc/logic/input.lp src/manipulation_rubik/doc/logic/rubik.lp >> solution.txt");
+    remove(solutionFileName);
+    createInputFile();
+    system("clingo src/manipulation_rubik/doc/logic/input.lp src/manipulation_rubik/doc/logic/rubik.lp -t 4 >> solution.txt");
    
     // regex expression for pattern to be searched 
     regex moveRegex ("move\\(\\d+,\\w+,\\d,-?\\d\\)"); 

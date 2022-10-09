@@ -18,6 +18,9 @@
 #include <manipulation_rubik/LeaveObject.h>
 #include <manipulation_rubik/RubikFaceDetect.h>
 #include <manipulation_rubik/RubikFace.h>
+#include <manipulation_rubik/StartProcess.h>
+#include <manipulation_rubik/ConstructRubikEyes.h>
+#include <manipulation_rubik/RequestEyesFace.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -87,6 +90,7 @@ ros::ServiceClient clientLeaveLeft;
 
 ros::ServiceClient clientDetectFace;
 ros::ServiceClient clientRubikFace;
+ros::ServiceClient clientRetrieveFace;
 
 void moveLeftPosition()
 {
@@ -280,6 +284,14 @@ void sendFaceData(std::vector<std::string> colors, std::string face, bool isNewC
   std::cout << srv.response.response << std::endl;
 }
 
+std::vector<std::string> retrieveFace(std::string face)
+{
+  manipulation_rubik::RequestEyesFace srv;
+  srv.request.face = face;
+  clientRetrieveFace.call(srv);
+  return srv.response.colors;
+}
+
 void maintainFromTopRightToBehindRight()
 {
     maintainBottomLeft();
@@ -449,39 +461,62 @@ void rotateFrontFace(bool isClockWise)
   LastMovement = Front;
 }
 
+
+bool constructRubikFromEyesData()
+{
+  std::cout << "Construct rubik data" << std::endl;
+
+  std::vector<std::string> faces;
+  faces.push_back("Top");
+  faces.push_back("Bottom");
+  faces.push_back("Right");
+  faces.push_back("Left");
+  faces.push_back("Front");
+  faces.push_back("Behind");
+
+  bool isNewCube = true;
+  for(int i = 0; i < faces.size(); i++)
+  {
+    auto face = faces[i];
+    auto colors = retrieveFace(face);
+    sendFaceData(colors, face, isNewCube);
+
+    if(isNewCube)
+    {
+      isNewCube = false;
+    }
+  }
+}
+
 void retrieveFaces()
 {
   
   std::string actualFace = "Behind";
   prepareForRotationLeft(true);
   leaveRight();
-  auto colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect behind face");
-  sendFaceData(colors, actualFace, true);
   rotateLeft(false, true);
 
   actualFace = "Top";
   prepareForRotationRight(false);
   leaveLeft();
-  colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect top face");
-  sendFaceData(colors, actualFace, false);
   rotateRight(true, true);
 
   actualFace = "Front";
   prepareForRotationLeft(true);
   leaveRight();
-  colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect front face");
-  sendFaceData(colors, actualFace, false);
   rotateLeft(false, true);
 
   actualFace = "Bottom";
   prepareForRotationRight(false);
   leaveLeft();
-  colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect bottom face");
-  sendFaceData(colors, actualFace, false);
   rotateRight(true, true);
 
   moveBottomPosition();
@@ -490,9 +525,8 @@ void retrieveFaces()
   prepareForRotationLeft(true);
   leaveRight();
   rotateLeft(false, true);
-  colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect left face");
-  sendFaceData(colors, actualFace, false);
   prepareForRotationRight(false);
   leaveLeft();
 
@@ -507,9 +541,8 @@ void retrieveFaces()
   prepareForRotationLeft(true);
   leaveRight();
   rotateLeft(false, true);
-  colors = faceDetect(actualFace);
+  faceDetect(actualFace);
   ROS_INFO("Detect right face");
-  sendFaceData(colors, actualFace, false);
   prepareForRotationRight(false);
   leaveLeft();
 
@@ -520,58 +553,15 @@ void retrieveFaces()
   prepareForRotationRight(false);
   leaveLeft();
 
+  constructRubikFromEyesData();
+
   moveLeftPosition();
 
 }
 
 
-int main(int argc, char** argv)
+bool startProcessRequest(manipulation_rubik::StartProcess::Request &req, manipulation_rubik::StartProcess::Response &res)
 {
-  ros::init(argc, argv, "brain");
-  ros::NodeHandle nh;
-
-  clientLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_left");
-  clientRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_right");
-  clientTop = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_top");
-  clientBottom = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_bottom");
-  clientFront = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_front");
-  clientBehind  = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_behind");
-
-  clientMaintainTopRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_top_right");
-  clientMaintainBehindRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_behind_right");
-  clientMaintainBottomLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_bottom_left");
-  clientMaintainFrontLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_front_left");
-
-  clientDoRotationRight = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_right");
-  clientDoRotationLeft = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_left");
-
-  clientLeaveMaintainRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_right");
-  clientLeaveMaintainLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_left");
-
-  clientResetEnvironment = nh.serviceClient<manipulation_rubik::LfMoveLeft>("reset_environment");
-  clientStartPositionRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("start_position_right");
-  clientStartPositionLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("start_position_left");
-
-  clientPickRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_right");
-  clientPickLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_left");
-
-  clientPlaceRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_right");
-  clientPlaceLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_left");
-
-  clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
-
-  clientPrepareForRotationRight = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_right");
-  clientPrepareForRotationLeft = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_left");
-
-  clientRotateRight = nh.serviceClient<manipulation_rubik::Rotate>("rotate_right");
-  clientRotateLeft = nh.serviceClient<manipulation_rubik::Rotate>("rotate_left");
-
-  clientLeaveRight = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_right");
-  clientLeaveLeft = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_left");
-
-  clientDetectFace = nh.serviceClient<manipulation_rubik::RubikFaceDetect>("detect_face");
-  clientRubikFace = nh.serviceClient<manipulation_rubik::RubikFace>("rubik_face");
-
   pickRight();
   moveLeftPosition();
   retrieveFaces();
@@ -623,7 +613,73 @@ int main(int argc, char** argv)
     placeRight();
     startPositionRight();
   }
+  return true;
+}
 
-  //ros::waitForShutdown();
+
+bool constructRubikEyesRequest(manipulation_rubik::ConstructRubikEyes::Request &req, manipulation_rubik::ConstructRubikEyes::Response &res)
+{
+  constructRubikFromEyesData();
+  return true;
+}
+
+
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "brain");
+  ros::NodeHandle nh;
+
+  clientLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_left");
+  clientRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_right");
+  clientTop = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_top");
+  clientBottom = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_bottom");
+  clientFront = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_front");
+  clientBehind  = nh.serviceClient<manipulation_rubik::LfMoveLeft>("move_behind");
+
+  clientMaintainTopRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_top_right");
+  clientMaintainBehindRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_behind_right");
+  clientMaintainBottomLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_bottom_left");
+  clientMaintainFrontLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("maintain_front_left");
+
+  clientDoRotationRight = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_right");
+  clientDoRotationLeft = nh.serviceClient<manipulation_rubik::RotateCube>("do_rotation_left");
+
+  clientLeaveMaintainRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_right");
+  clientLeaveMaintainLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("leave_maintain_left");
+
+  clientResetEnvironment = nh.serviceClient<manipulation_rubik::LfMoveLeft>("reset_environment");
+  clientStartPositionRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("start_position_right");
+  clientStartPositionLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("start_position_left");
+
+  clientPickRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_right");
+  clientPickLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("pick_left");
+
+  clientPlaceRight = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_right");
+  clientPlaceLeft = nh.serviceClient<manipulation_rubik::LfMoveLeft>("place_left");
+
+  clientResolveConfiguration = nh.serviceClient<manipulation_rubik::ResolveConfiguration>("resolve_configuration");
+
+  clientPrepareForRotationRight = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_right");
+  clientPrepareForRotationLeft = nh.serviceClient<manipulation_rubik::PrepareForRotation>("prepare_for_rotation_left");
+
+  clientRotateRight = nh.serviceClient<manipulation_rubik::Rotate>("rotate_right");
+  clientRotateLeft = nh.serviceClient<manipulation_rubik::Rotate>("rotate_left");
+
+  clientLeaveRight = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_right");
+  clientLeaveLeft = nh.serviceClient<manipulation_rubik::LeaveObject>("leave_left");
+
+  clientDetectFace = nh.serviceClient<manipulation_rubik::RubikFaceDetect>("detect_face");
+  clientRubikFace = nh.serviceClient<manipulation_rubik::RubikFace>("rubik_face");
+  clientRetrieveFace =  nh.serviceClient<manipulation_rubik::RequestEyesFace>("retrieve_face");
+
+
+  auto service1 = nh.advertiseService("start_process", startProcessRequest);
+  auto service2 = nh.advertiseService("construct_rubik_eyes", constructRubikEyesRequest);
+
+  ros::AsyncSpinner spinner(2);
+  spinner.start();
+
+  ros::waitForShutdown();
   return 0;
 }

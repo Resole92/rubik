@@ -11,6 +11,7 @@
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
 #include <manipulation_rubik/RubikFaceDetect.h>
+#include <manipulation_rubik/RequestEyesFace.h>
 #include "std_msgs/String.h"
 
 // MoveIt
@@ -39,12 +40,19 @@
 
 using namespace std;
 
-string captureFace(string faceName)
+string processedPath = "src/manipulation_rubik/doc/eyes/photos_processed";
+
+string getProcessFacePath(string faceName)
+{
+  return processedPath + "/" + faceName + ".txt";
+}
+
+void captureFace(string faceName)
 {
   cv::VideoCapture capture(0);
   if(!capture.isOpened()){
     cout << "could not read file" << endl;
-    return "";
+    return;
   }  
 
   cv::Mat mat;
@@ -70,19 +78,15 @@ string captureFace(string faceName)
 
   string scriptPath = "src/manipulation_rubik/doc/eyes/photoProcess.py";
   string processFolder = "src/manipulation_rubik/doc/eyes/photos_processed";
-  system(("python " + scriptPath + " " + processPath + " " + processFolder + " " + faceName ).c_str());
-
-  string resultPath = processFolder + "/" + faceName + ".txt";
-  return resultPath;
-
+  system(("python " + scriptPath + " " + processPath + " " + processedPath + " " + faceName ).c_str());
 }
 
-
-bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipulation_rubik::RubikFaceDetect::Response &res)
+vector<string> retrieveFaceColors(string face)
 {
-  string resultPath =  captureFace(req.face);
+  string resultPath =  getProcessFacePath(face);
   string line;
   string str;
+  vector<string> colors;
   ifstream myfile (resultPath);
   if (myfile.is_open())
   {
@@ -99,10 +103,18 @@ bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipu
   {
     string substr;
     getline( ss, substr, ',' );
-    res.colors.push_back(substr);
+    colors.push_back(substr);
   }
-  
-  return true;
+
+  return colors;
+}
+
+
+bool detectFaceRequest(manipulation_rubik::RubikFaceDetect::Request &req, manipulation_rubik::RubikFaceDetect::Response &res)
+{
+  captureFace(req.face);
+  auto colors = retrieveFaceColors(req.face);
+  res.colors = colors;
 }
 
 
@@ -113,14 +125,22 @@ bool capturePhotoRequest(manipulation_rubik::LfMoveLeft::Request &req, manipulat
 
 }
 
+bool retrieveFaceRequest(manipulation_rubik::RequestEyesFace::Request &req, manipulation_rubik::RequestEyesFace::Response &res)
+{
+  auto colors = retrieveFaceColors(req.face);
+  res.colors = colors;
+  return true;
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "eyes");
   ros::NodeHandle nh;
  
   auto service1 = nh.advertiseService("detect_face", detectFaceRequest);
-  auto service2 = nh.advertiseService("capture_photo", capturePhotoRequest);
- 
+  auto service2 = nh.advertiseService("capture_photo", capturePhotoRequest); 
+  auto service3 = nh.advertiseService("retrieve_face", retrieveFaceRequest);
+
 
   ros::AsyncSpinner spinner(2);
   spinner.start();

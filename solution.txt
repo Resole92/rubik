@@ -1,56 +1,17 @@
 clingo version 5.2.2
 Reading from .../manipulation_rubik/doc/logic/input.lp ...
 Solving...
-Answer: 1
-solved(3) move(0,pitch,0,-1) move(1,roll,1,-1) move(2,yaw,0,-1) move(3,roll,1,1)
-Optimization: 3
-OPTIMUM FOUND
-
-Models       : 1
-  Optimum    : yes
-Optimization : 3
-Calls        : 1
-Time         : 0.076s (Solving: 0.01s 1st Model: 0.01s Unsat: 0.00s)
-CPU Time     : 0.073s
-clingo version 5.2.2
-Reading from .../manipulation_rubik/doc/logic/input.lp ...
+Solving...
+Solving...
+Solving...
+Solving...
+Solving...
 Solving...
 Answer: 1
-solved(3) move(0,pitch,0,-1) move(1,roll,1,-1) move(2,yaw,0,-1) move(3,roll,1,1)
-Optimization: 3
-OPTIMUM FOUND
+move(1,pitch,1,-1) move(2,roll,1,1) move(3,pitch,1,-1) move(4,yaw,0,-1) move(5,roll,1,-1) move(6,yaw,0,1)
+SATISFIABLE
 
-Models       : 1
-  Optimum    : yes
-Optimization : 3
-Calls        : 1
-Time         : 0.291s (Solving: 0.02s 1st Model: 0.02s Unsat: 0.00s)
-CPU Time     : 0.210s
-clingo version 5.2.2
-Reading from .../manipulation_rubik/doc/logic/input.lp ...
-Solving...
-Answer: 1
-solved(3) move(0,pitch,0,-1) move(1,roll,1,-1) move(2,yaw,0,-1) move(3,roll,1,1)
-Optimization: 3
-OPTIMUM FOUND
-
-Models       : 1
-  Optimum    : yes
-Optimization : 3
-Calls        : 1
-Time         : 0.111s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
-CPU Time     : 0.093s
-clingo version 5.2.2
-Reading from .../manipulation_rubik/doc/logic/input.lp ...
-Solving...
-Answer: 1
-solved(3) move(0,pitch,0,-1) move(1,roll,1,-1) move(2,yaw,0,-1) move(3,roll,1,1)
-Optimization: 3
-OPTIMUM FOUND
-
-Models       : 1
-  Optimum    : yes
-Optimization : 3
-Calls        : 1
-Time         : 0.142s (Solving: 0.01s 1st Model: 0.01s Unsat: 0.00s)
-CPU Time     : 0.115s
+Models       : 1+
+Calls        : 7
+Time         : 42.202s (Solving: 41.87s 1st Model: 30.95s Unsat: 10.92s)
+CPU Time     : 39.770s

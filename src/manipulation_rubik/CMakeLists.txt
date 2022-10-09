@@ -58,6 +58,9 @@ add_service_files(
   Rotate.srv
   LeaveObject.srv
   CreateInput.srv
+  RequestEyesFace.srv 
+  StartProcess.srv
+  ConstructRubikEyes.srv
 )
 
 

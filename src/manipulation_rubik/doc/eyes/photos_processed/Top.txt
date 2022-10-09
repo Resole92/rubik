@@ -1,1 +1,1 @@
-yellow,green,white,blue
+white,yellow,white,green
