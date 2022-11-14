@@ -1,4 +1,5 @@
 bool doFaceDetecting
 bool doMovement
+bool doSimulationLogic
 ---
 string response

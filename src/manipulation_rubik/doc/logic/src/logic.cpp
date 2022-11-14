@@ -416,6 +416,38 @@ bool createInputRequest(manipulation_rubik::CreateInput::Request &req, manipulat
 bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Request &req, manipulation_rubik::ResolveConfiguration::Response &res)
 {
     
+    if(req.issimulation)
+    {
+        manipulation_rubik::MoveConfiguration move1;
+        move1.IsClockWise = true;
+        move1.Move = "Bottom";
+        res.result.push_back(move1);
+
+        manipulation_rubik::MoveConfiguration move2;
+        move2.IsClockWise = false;
+        move2.Move = "Front";
+        res.result.push_back(move2);
+
+        manipulation_rubik::MoveConfiguration move3;
+        move3.IsClockWise = false;
+        move3.Move = "Front";
+        res.result.push_back(move3);
+
+        manipulation_rubik::MoveConfiguration move4;
+        move4.IsClockWise = false;
+        move4.Move = "Behind";
+        res.result.push_back(move4);
+
+        manipulation_rubik::MoveConfiguration move5;
+        move5.IsClockWise = true;
+        move5.Move = "Right";
+        res.result.push_back(move5);
+        res.numberOfMoves = 5;
+
+        return true;
+    
+    }
+
     char solutionFileName[] = "solution.txt";
 
     //char commandClingo[] = "clingo src/manipulation_rubik/doc/logic/rubik.lp >> ";
@@ -533,33 +565,7 @@ bool resolveConfigurationRequest(manipulation_rubik::ResolveConfiguration::Reque
       cout << "Move " << i + 1 << ": " << res.result[i]; 
     }
     
-    /*
-    manipulation_rubik::MoveConfiguration move1;
-    move1.IsClockWise = true;
-    move1.Move = "Bottom";
-    res.result.push_back(move1);
-
-    manipulation_rubik::MoveConfiguration move2;
-    move2.IsClockWise = false;
-    move2.Move = "Front";
-    res.result.push_back(move2);
-
-    manipulation_rubik::MoveConfiguration move3;
-    move3.IsClockWise = false;
-    move3.Move = "Front";
-    res.result.push_back(move3);
-
-    manipulation_rubik::MoveConfiguration move4;
-    move4.IsClockWise = false;
-    move4.Move = "Behind";
-    res.result.push_back(move4);
-
-    manipulation_rubik::MoveConfiguration move5;
-    move5.IsClockWise = true;
-    move5.Move = "Right";
-    res.result.push_back(move5);
-    res.numberOfMoves = 5;
-    */
+    
     return true;
 }
 

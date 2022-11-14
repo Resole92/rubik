@@ -569,12 +569,13 @@ bool startProcessRequest(manipulation_rubik::StartProcess::Request &req, manipul
     retrieveFaces();
   }
 
-  if(!req.doMovement) return;
+  if(!req.doMovement) return true;
   
   maintainTopRight();
   MainteinedStatus = TopRight;
 
   manipulation_rubik::ResolveConfiguration srv;
+  srv.request.issimulation = req.doSimulationLogic;
   clientResolveConfiguration.call(srv);
   auto moves = srv.response.result;
   auto numberOfMoves = srv.response.numberOfMoves;
