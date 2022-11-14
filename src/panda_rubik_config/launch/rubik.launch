@@ -1,0 +1,6 @@
+<launch>
+  <node name="logic" pkg="manipulation_rubik" type="logic"/>
+  <node name="eyes" pkg="manipulation_rubik" type="eyes"/>
+  <node name="brain" pkg="manipulation_rubik" type="brain"/>
+  <node name="rubik_right_move" pkg="manipulation_rubik" type="rubik_right_move"/>
+</launch>
