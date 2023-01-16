@@ -55,19 +55,11 @@ reach(roll,1,5,1). % roll back
 %% Predicato per distinguere la configurazione iniziale.
 init(C,Col1,Col2,Col3) :- is(0,C,Col1,Col2,Col3),cubie(C),color(Col1;Col2;Col3).
 
-#program check(t).
+#program check(t). 
 %% configurazione risolta del cubo
 solved(t) :- is(t,0,Col4,Col1,Col3), is(t,1,Col4,Col1,Col5), is(t,2,Col6,Col1,Col5), is(t,3,Col6,Col1,Col3),
-             is(t,4,Col4,Col2,Col3), is(t,5,Col4,Col2,Col5), is(t,6,Col6,Col2,Col5), is(t,7,Col6,Col2,Col3),
-             faces(Col1,Col2,Col3,Col4,Col5,Col6).
+             is(t,4,Col4,Col2,Col3), is(t,5,Col4,Col2,Col5), is(t,6,Col6,Col2,Col5), is(t,7,Col6,Col2,Col3).
 
-%% limita il check alle sole configurazioni risolte effettivamente ottenibili.
-%% Ad esempio se green e blue sono colori opposti, non esisterà mai una configurazione
-%% risolta che li vede vicini (ma senza faces/6 la regola sopra controllerebbe anche quello!)
-faces(green,blue,red,white,orange,yellow).
-faces(Col1,Col2,Col4,Col5,Col6,Col3) :- faces(Col1,Col2,Col3,Col4,Col5,Col6).
-faces(Col2,Col1,Col6,Col5,Col4,Col3) :- faces(Col1,Col2,Col3,Col4,Col5,Col6).
-faces(Col3,Col5,Col4,Col1,Col6,Col2) :- faces(Col1,Col2,Col3,Col4,Col5,Col6).
 %% chiedo che il cubo sia risolto 
 :- not solved(t), query(t).
 

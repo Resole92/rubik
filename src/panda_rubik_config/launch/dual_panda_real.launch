@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<launch>
+  
+  <arg name="panda_1_ip"/>
+  <arg name="panda_2_ip"/>
+  <arg name="robot" default="$(find panda_rubik_config)/xacro_thesis/dual_panda_example.urdf.xacro"/>
+  
+  <!-- Load franka controller -->
+  <include file="$(find franka_control)/launch/franka_combined_control.launch" >
+    <arg name="robot_ips" value="{panda_1/robot_ip: $(arg panda_1_ip),panda_2/robot_ip: $(arg panda_2_ip)}" />
+    <arg name="robot" value="$(arg robot)" />
+  </include>
+
+  <!-- Load semantics associated to the URDF file used -->
+  <param name="robot_description_semantic" command="$(find xacro)/xacro '$(find panda_rubik_config)/config/dual_panda.srdf.xacro'"  />
+
+  <!-- Load updated joint limits (override information from URDF) -->
+  <group ns="$(arg robot_description)_planning">
+    <rosparam command="load" file="$(find panda_rubik_config)/config/joint_limits.yaml"/>
+  </group>
+
+  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+  <group ns="$(arg robot_description)_kinematics">
+    <rosparam command="load" file="$(find panda_rubik_config)/config/kinematics.yaml"/>
+  </group>
+
+   <!-- Set the param that trajectory_execution_manager needs to find the controller plugin -->
+  <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
+  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
+  <!-- Load controller_list -->
+  <rosparam file="$(find panda_rubik_config)/config/panda_gripper_controllers.yaml"/>
+  <!-- Spawn the controller -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="panda_1_state_controller panda_2_state_controller"/>
+   
+  <!-- Launch needing of move_group MoveIt! -->
+  <include file="$(find panda_rubik_config)/launch/move_group.launch">
+    <arg name="load_gripper" value="$(arg load_gripper)" />
+  </include>
+
+  <include file="$(find panda_rubik_config)/launch/moveit_rviz.launch" />
+</launch>

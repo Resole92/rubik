@@ -29,11 +29,7 @@ find_package(catkin REQUIRED
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV)
 find_package(Boost REQUIRED system filesystem date_time thread)
-#find_package(Franka REQUIRED)
 
-#add_library(libfranka)
-
-#target_link_libraries(libfranka Franka::Franka)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
   doc/interactivity/include
@@ -73,7 +69,7 @@ generate_messages(
 
 catkin_package(
   LIBRARIES
-  INCLUDE_DIRS
+  INCLUDE_DIRS 
   CATKIN_DEPENDS
     moveit_core
     moveit_visual_tools

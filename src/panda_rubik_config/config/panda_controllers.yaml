@@ -11,7 +11,7 @@
       - panda_joint5
       - panda_joint6
       - panda_joint7
-  - name: panda_1_position_joint_trajectory_controller
+  - name: panda_1_state_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
@@ -23,7 +23,7 @@
       - panda_1_joint5
       - panda_1_joint6
       - panda_1_joint7
-  - name: panda_2_position_joint_trajectory_controller
+  - name: panda_2_state_controller
     action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
