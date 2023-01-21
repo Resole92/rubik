@@ -1,0 +1,3 @@
+bool isToOpen
+---
+std_msgs/String result

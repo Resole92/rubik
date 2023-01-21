@@ -57,6 +57,7 @@ add_service_files(
   RequestEyesFace.srv 
   StartProcess.srv
   ConstructRubikEyes.srv
+  MoveGripper.srv
 )
 
 

@@ -14,6 +14,7 @@
 #include <manipulation_rubik/Rotate.h>
 #include <manipulation_rubik/PrepareForRotation.h>
 #include <manipulation_rubik/LeaveObject.h>
+#include <manipulation_rubik/MoveGripper.h>
 #include "std_msgs/String.h"
 
 
@@ -1215,6 +1216,39 @@ bool leaveLeftRequest(manipulation_rubik::LeaveObject::Request &req, manipulatio
   return true;
 }
 
+
+bool moveGripperRightRequest(manipulation_rubik::MoveGripper::Request &req, manipulation_rubik::MoveGripper::Response &res)
+{
+  
+  if(req.isToOpen)
+  {
+    ROS_INFO("Open Gripper Left");
+    openGripperManually(1,false);
+  }
+  else
+  {
+    ROS_INFO("Close Gripper Left");
+    closedGripperManually(1,true);
+  }
+  return true;
+}
+
+bool moveGripperLeftRequest(manipulation_rubik::MoveGripper::Request &req, manipulation_rubik::MoveGripper::Response &res)
+{
+  
+  if(req.isToOpen)
+  {
+    ROS_INFO("Open Gripper Left");
+    openGripperManually(2,false);
+  }
+  else
+  {
+    ROS_INFO("Close Gripper Left");
+    closedGripperManually(2,true);
+  }
+  return true;
+}
+
 int main(int argc, char** argv)
 {
   //ArmBase 
@@ -1258,7 +1292,9 @@ int main(int argc, char** argv)
 
   auto service26 = nh.advertiseService("leave_right", leaveRightRequest);
   auto service27 = nh.advertiseService("leave_left", leaveLeftRequest);
-  
+
+  auto service29 = nh.advertiseService("move_gripper_right", moveGripperRightRequest);
+  auto service28 = nh.advertiseService("move_gripper_left", moveGripperLeftRequest);
 
 
   ros::AsyncSpinner spinner(2);
