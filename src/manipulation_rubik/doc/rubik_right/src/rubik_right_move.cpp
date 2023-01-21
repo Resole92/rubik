@@ -38,6 +38,8 @@
 #include <tf2_ros/transform_listener.h>
 //#include <src/manipulation_rubik/doc/arm/ArmBase.h>
 
+bool isSimulation = true;
+
 enum robotPositionSet { Left, Top, Right, Bottom, Front, Behind};
 enum robotMaintainPosition { TopRight, BehindRight, BottomLeft, FrontLeft, None};
 
@@ -1251,10 +1253,24 @@ bool moveGripperLeftRequest(manipulation_rubik::MoveGripper::Request &req, manip
 
 int main(int argc, char** argv)
 {
-  //ArmBase 
-
   ros::init(argc, argv, "rubik_right_move");
   ros::NodeHandle nh;
+
+  std::string nodeMode = "";
+ 
+  if(argc > 1){
+     nodeMode = argv[1];
+  }
+  
+  if(nodeMode == "real"){
+    ROS_INFO("Actual node is in REAL MODE");
+    isSimulation = false;
+  }
+  else{
+    ROS_INFO("Actual node is in SIMULATION MODE");
+    isSimulation = true;
+  }
+  
 
   auto service1 = nh.advertiseService("move_left", moveLeftPositionRequest);
   auto service2 = nh.advertiseService("move_right", moveRightPositionRequest);
