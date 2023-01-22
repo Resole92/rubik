@@ -1,18 +1,25 @@
 <?xml version="1.0" ?>
 <launch>
   
+ 
+  <arg name="robot" default="$(find panda_rubik_config)/xacro_thesis/dual_panda_example.urdf.xacro"/>
+  <arg name="robot_semantic" default="$(find panda_rubik_config)/config/dual_panda.srdf.xacro"/>
+  <arg name="robot_description" default="robot_description"/>
+  <arg name="fake_execution" default="true"/>
+
+  <!-- Load franka controller 
   <arg name="panda_1_ip"/>
   <arg name="panda_2_ip"/>
-  <arg name="robot" default="$(find panda_rubik_config)/xacro_thesis/dual_panda_example.urdf.xacro"/>
-  
-  <!-- Load franka controller -->
   <include file="$(find franka_control)/launch/franka_combined_control.launch" >
     <arg name="robot_ips" value="{panda_1/robot_ip: $(arg panda_1_ip),panda_2/robot_ip: $(arg panda_2_ip)}" />
     <arg name="robot" value="$(arg robot)" />
-  </include>
+  </include>-->
 
-  <!-- Load semantics associated to the URDF file used -->
-  <param name="robot_description_semantic" command="$(find xacro)/xacro '$(find panda_rubik_config)/config/dual_panda.srdf.xacro'"  />
+  <!-- Load description associated to the URDF file used -->
+  <param name="$(arg robot_description)" command="$(find xacro)/xacro $(arg robot)"/>
+
+  <!-- Load semantics associated to the SRDF file used -->
+  <param name="$(arg robot_description)_semantic" command="$(find xacro)/xacro '$(arg robot_semantic)'"  />
 
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
@@ -24,18 +31,19 @@
     <rosparam command="load" file="$(find panda_rubik_config)/config/kinematics.yaml"/>
   </group>
 
-   <!-- Set the param that trajectory_execution_manager needs to find the controller plugin -->
-  <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
-  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
-  <!-- Load controller_list -->
-  <rosparam file="$(find panda_rubik_config)/config/panda_gripper_controllers.yaml"/>
-  <!-- Spawn the controller -->
-  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="panda_1_state_controller panda_2_state_controller"/>
+  <!-- Spawn the controller if we have robot connected -->
+  <node unless="$(arg fake_execution)" name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="panda_1_state_controller panda_2_state_controller"/>
    
+    <!-- We do not have a robot connected, so publish fake joint states -->
+  <node if="$(arg fake_execution)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
+  </node>
+  <node if="$(arg fake_execution)" name="joint_state_desired_publisher" pkg="topic_tools" type="relay" args="joint_states joint_states_desired" />
+
   <!-- Launch needing of move_group MoveIt! -->
   <include file="$(find panda_rubik_config)/launch/move_group.launch">
-    <arg name="load_gripper" value="$(arg load_gripper)" />
+     <arg name="dual_panda" value="true" />
+     <arg name="fake_execution" value="$(arg fake_execution)" />
   </include>
-
   <include file="$(find panda_rubik_config)/launch/moveit_rviz.launch" />
 </launch>

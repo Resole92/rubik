@@ -1,6 +1,7 @@
 <launch>
 
   <arg name="load_gripper" default="true" />
+  <arg name="dual_panda" default="false" />
 
   <arg name="pipeline" default="ompl" />
 
@@ -30,8 +31,9 @@
   <!-- Trajectory Execution Functionality -->
   <include ns="move_group" file="$(find panda_rubik_config)/launch/trajectory_execution.launch.xml" if="$(arg allow_trajectory_execution)">
     <arg name="moveit_manage_controllers" value="true" />
-    <arg name="moveit_controller_manager" value="panda" if="$(eval not arg('fake_execution') and not arg('load_gripper'))"/>
-    <arg name="moveit_controller_manager" value="panda_gripper" if="$(eval not arg('fake_execution') and arg('load_gripper'))"/>
+    <arg name="moveit_controller_manager" value="panda" if="$(eval not arg('fake_execution') and not arg('load_gripper') and not arg('dual_panda'))"/>
+    <arg name="moveit_controller_manager" value="panda_gripper" if="$(eval not arg('fake_execution') and arg('load_gripper') and not arg('dual_panda'))"/>
+    <arg name="moveit_controller_manager" value="dual_panda" if="$(eval not arg('fake_execution') and arg('dual_panda'))"/>
     <arg name="moveit_controller_manager" value="fake" if="$(arg fake_execution)"/>
   </include>
 
