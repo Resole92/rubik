@@ -7,6 +7,7 @@
 #include <franka_gripper/StopAction.h>
 
 
+
 // ROS
 #include <ros/ros.h>
 #include <manipulation_rubik/LfMoveLeft.h>
@@ -73,8 +74,6 @@ robotMaintainPosition robotMaintainPosition2 = None;
 const std::string pandaArmNumber = "_1";
 const std::string endEffectorGroupName = "panda"+ pandaArmNumber +"_effector";
 const std::string pandaArmGroupName = "panda"+ pandaArmNumber +"_arm";
-
-
 
 geometry_msgs::Pose getCubeStartPose()
 {
@@ -181,8 +180,6 @@ bool changeCheckContactWithObject(std::string objectName, bool disable, int pand
   acm.setEntry("panda_2_link6", "panda_1_rightfinger", disable);
   acm.setEntry("panda_2_link6", "panda_1_hand", disable);
 
-
-
   moveit_msgs::PlanningScene planning_scene;
 
   acm.getMessage(planning_scene.allowed_collision_matrix);
@@ -192,16 +189,31 @@ bool changeCheckContactWithObject(std::string objectName, bool disable, int pand
   planning_scene_diff_client.call(srv);
 }
 
+std::string getArmIp(int pandaIdentifier)
+{
+   ros::NodeHandle nh;
+   std::string ipRobotArm = "default";
+   nh.getParam("combined_panda/panda_" + std::to_string(pandaIdentifier) + "/robot_ip", ipRobotArm);
+   return ipRobotArm;
+}
+
 void openGripperManually(int pandaIdentifier, bool isObjectToDetach, std::string objectToDetach = rubikName)
 {
   auto groupName = "panda_" + std::to_string(pandaIdentifier) + "_effector";
   moveit::planning_interface::MoveGroupInterface group(groupName); 
-
   auto joint_position = {0.04, 0.04};
   auto success = moveToJointPosition(group, joint_position);
+
   if(isObjectToDetach)
   {
     group.detachObject(objectToDetach);
+  }
+  
+  if(!isSimulation)
+  {
+    auto armIp = getArmIp(pandaIdentifier);
+    franka::Gripper gripper(armIp);
+    gripper.move(0.006, 0.1);
   }
 }
 
@@ -209,18 +221,24 @@ void closedGripperManually(int pandaIdentifier, bool isMainteined = false, std::
 {
   auto groupName = "panda_" + std::to_string(pandaIdentifier) + "_effector";
   moveit::planning_interface::MoveGroupInterface group(groupName); 
-  
+
   changeCheckContactWithObject(objectToDetach, true, pandaIdentifier);
   auto joint_position = {0.03, 0.03};
   auto success = moveToJointPosition(group, joint_position);
+
   if(!isMainteined)
   {
-    
     ROS_INFO("Attach object");
     group.attachObject(objectToDetach);
   }
+  
+  if(!isSimulation)
+  {
+    auto armIp = getArmIp(pandaIdentifier);
+    franka::Gripper gripper(armIp);
+    gripper.grasp(0.045, 0.1, 10.0);
+  }
 }
-
 
 bool canMoveClockWise(int pandaIdentifier)
 {
@@ -1267,6 +1285,7 @@ int main(int argc, char** argv)
     isSimulation = false;
   }
   else{
+    
     ROS_INFO("Actual node is in SIMULATION MODE");
     isSimulation = true;
   }
