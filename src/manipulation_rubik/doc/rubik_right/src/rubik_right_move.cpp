@@ -428,11 +428,46 @@ void doTransformation(std::string from_frame, std::string to_frame, geometry_msg
   tf2::doTransform(target_pose, target_pose, from_frame_to_frame); // robot_pose is the PoseStamped I want to transform
 }
 
+void checkLimits(int pandaIdentifier)
+{
+  auto identifier = std::to_string(pandaIdentifier);
+  auto pandaName =  "panda_" + identifier;
+
+  std::string jointsName [] = {
+    pandaName +"_joint1",
+    pandaName +"_joint2",
+    pandaName +"_joint3",
+    pandaName +"_joint4",
+    pandaName +"_joint5",
+    pandaName +"_joint6",
+    pandaName +"_joint7"};
+
+  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
+  robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
+
+  for(int i = 0; i < 7; i ++ )
+  {
+    auto jointName = jointsName[i];
+
+    robot_model::JointModel* joint_model = kinematic_model->getJointModel(jointName);
+    auto limits = joint_model->getVariableBoundsMsg();
+    for(moveit_msgs::JointLimits joint_limits_check : limits){
+          // Stampo i limiti di posizione del giunto
+
+          std::cout << "Joint " << joint_model->getName() << " for panda arm " + identifier + " has position limits:" << std::endl;
+          std::cout << "  Min position: " << joint_limits_check.min_position << std::endl;
+          std::cout << "  Max position: " << joint_limits_check.max_position << std::endl;
+    }   
+  }
+}
+
 void moveToTargetPose(int pandaIdentifier, geometry_msgs::Pose& pose)
 {
   auto pandaArmName = "panda_"+ std::to_string(pandaIdentifier) +"_arm";
   moveit::planning_interface::MoveGroupInterface group(pandaArmName);
 
+  //applyJointContraint(pandaIdentifier, group);
+  
   group.setPoseTarget(pose);
 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
@@ -1353,6 +1388,9 @@ int main(int argc, char** argv)
 
   panda1Group.setPlanningTime(20.0);
   panda2Group.setPlanningTime(20.0);
+
+  //checkLimits(1);
+  //checkLimits(2);
 
   resetBehaviorAndPickFromStart();
 
